@@ -19,7 +19,7 @@ so that **[Benefit / Value delivered]**.
 
 ## 3. Architectural Guardrails
 
-* **Modules involved:** [`Core` / `OCR` / `Translation` / `UI` / `Admin`]
+* **Modules involved:** [`Core` / `OCR` / `Translation` / `UI` / `Admin`] — `Aurora.App` is the composition root only, never a business module
 * **Related ADRs:** [e.g. ADR-001]
 * **Isolation constraints:** [Any namespace or dependency rules that apply]
 

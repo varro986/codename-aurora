@@ -1,0 +1,53 @@
+name: Issue Lifecycle
+
+# Triggered when a PR is opened or reopened.
+# If the branch follows the us-{number}/ convention, moves the linked issue
+# from status:active to status:review automatically.
+#
+# Closing the issue (status:done) is handled natively by GitHub when the PR
+# is merged and the PR body contains "Closes #N".
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  update-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        with:
+          script: |
+            const branch = context.payload.pull_request.head.ref;
+            const match = branch.match(/^us-(\d+)\//);
+            if (!match) {
+              core.info(`Branch "${branch}" does not follow us-{number}/ convention — skipping.`);
+              return;
+            }
+
+            const issueNumber = parseInt(match[1], 10);
+            core.info(`PR linked to issue #${issueNumber}`);
+
+            // Swap status:active → status:review.
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                name: 'status:active'
+              });
+            } catch (e) {
+              core.info('status:active not present, skipping removal.');
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['status:review']
+            });
+
+            core.info(`Issue #${issueNumber} moved to status:review.`);

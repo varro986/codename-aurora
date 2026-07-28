@@ -12,6 +12,7 @@ internal static class Program
 
         // DI registration lives here — ADR-006, ADR-007.
         // Concrete registrations are driven by user stories.
+        // IModelManager must be registered as a singleton (ADR-008).
 
         var app = new App();
         app.Run();

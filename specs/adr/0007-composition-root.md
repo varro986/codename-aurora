@@ -22,7 +22,7 @@ Introduce `Aurora.App` as the sole `WinExe` entry point and DI composition root.
 
 ## Consequences
 
-- `Aurora.App.csproj` is `WinExe`, `UseWPF=true`, references all 5 modules — the only project allowed to do so.
+- `Aurora.App.csproj` is `WinExe`, `UseWPF=true`, references all other 5 modules (Core + 4 operational) — the only project allowed to do so.
 - `Aurora.UI.csproj` is a WPF class library (`UseWPF=true`, no `OutputType`). `App.xaml` is compiled as `Page` (not `ApplicationDefinition`) to prevent the WPF SDK from auto-generating a competing `Main()`.
 - `Aurora.App/Program.cs` contains `[STAThread] Main()`. Per ADR-005, `VelopackApp.Build().Run()` must be its very first call.
 - All DI registrations (concrete service implementations, `IAppSettings`) live exclusively in `Aurora.App`.

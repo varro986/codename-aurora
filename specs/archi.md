@@ -19,7 +19,7 @@
 graph TD
     User(["Operator / Legacy Software"])
     AppEntry["Aurora.App\n(Composition Root)"]
-    Core["Aurora.Core\n(IOcrService, ITranslationEngine, IAppSettings)"]
+    Core["Aurora.Core\n(IOcrService, ITranslationEngine, IAppSettings, IModelManager)"]
     OCR["Aurora.OCR\n(WinRT OCR Engine)"]
     Translation["Aurora.Translation\n(Cascading JSON & Fallback)"]
     UI["Aurora.UI\n(WPF Overlay & Tray Icon)"]
@@ -30,9 +30,10 @@ graph TD
     AppEntry -->|"Bootstraps & wires DI"| OCR
     AppEntry -->|"Bootstraps & wires DI"| Translation
     AppEntry -->|"Bootstraps & wires DI"| Admin
+    AppEntry -->|"Resolves contracts"| Core
     UI -->|"Uses contracts"| Core
     OCR -->|"Implements IOcrService"| Core
-    Translation -->|"Implements ITranslationEngine"| Core
+    Translation -->|"Implements ITranslationEngine, IModelManager"| Core
     Admin -->|"Configures global state"| Core
 ```
 

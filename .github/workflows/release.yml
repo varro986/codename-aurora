@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Publish Release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9  # v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: dotnet build CodenameAurora.slnx --configuration Release
+
+      - name: Architecture tests
+        run: dotnet test --filter "Category=Architecture" --no-build --configuration Release
+
+      # TODO: add full test suite run when unit/integration projects exist
+
+      # Velopack packaging and GitHub Releases publish steps
+      # will be added by the auto-update user story (ADR-005).

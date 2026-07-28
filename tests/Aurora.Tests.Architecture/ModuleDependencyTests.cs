@@ -60,6 +60,18 @@ public class ModuleDependencyTests
         Assert.True(result.IsSuccessful, FormatFailure(result));
     }
 
+    [Fact, Trait("Category", "Architecture")]
+    public void ModelManager_MustBeImplementedOnly_ByTranslationModule()
+    {
+        // ADR-008: IModelManager is an Aurora.Core contract; only Aurora.Translation may implement it.
+        var result = Types.InCurrentDomain()
+            .That().ImplementInterface(typeof(Aurora.Core.Interfaces.IModelManager))
+            .Should().ResideInNamespace(TranslationNamespace)
+            .GetResult();
+
+        Assert.True(result.IsSuccessful, FormatFailure(result));
+    }
+
     private static string FormatFailure(TestResult result) =>
         $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}";
 }

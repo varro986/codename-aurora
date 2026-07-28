@@ -26,6 +26,8 @@ Codename Aurora requires a rigorous, maintainable, and modular architecture with
 
 Adopt the **Modular Monolith** pattern. The solution will consist of 5 separate .NET 10 projects. All modules depend exclusively on the `Core` module. No direct dependency between operational modules (`OCR`, `Translation`, `UI`, `Admin`) is permitted.
 
+> **Note (ADR-007):** A dedicated composition root project `Aurora.App` was later introduced, bringing the total to 6 projects. See ADR-007.
+
 ## 4. Consequences
 
 * **Positive impacts:** High maintainability, clear domain boundaries, easy unit and architectural testing.

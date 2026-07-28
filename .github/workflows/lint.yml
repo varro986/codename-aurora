@@ -1,0 +1,21 @@
+name: Lint
+
+# Runs shellcheck on all bash scripts in .github/.
+# Also available as workflow_dispatch for manual verification.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/**/*.sh'
+  workflow_dispatch:
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Run shellcheck
+        run: find .github -name '*.sh' | xargs shellcheck --severity=warning

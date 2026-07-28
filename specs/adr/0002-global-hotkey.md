@@ -27,7 +27,7 @@ Use Win32 `RegisterHotKey` / `UnregisterHotKey` via P/Invoke from `Aurora.UI`.
 
 ## Consequences
 
-- Hotkeys are registered in `App.xaml.cs` on startup and unregistered on exit.
+- Hotkeys are registered in `App.xaml.cs` on startup and unregistered on exit. Hotkey binding values are read from `IAppSettings` (ADR-006); DI wiring of any hotkey service is orchestrated by `Aurora.App` (ADR-007), while the actual `RegisterHotKey` P/Invoke calls remain within `Aurora.UI`.
 - If `RegisterHotKey` returns `false` (conflict with another application), Aurora surfaces a warning notification via the tray icon and falls back to the default combination.
 - Hotkey combinations are user-configurable; the bindings are stored and read through `IAppSettings` (see ADR-006).
 - `Aurora.UI` is the sole owner of hotkey registration. P/Invoke declarations stay in `Aurora.UI` — never in `Aurora.Core`.

@@ -1,0 +1,54 @@
+name: Test Governance Scripts
+
+# Smoke-tests setup-repo.sh and setup-labels.sh in DRY_RUN mode.
+# No GitHub API calls are made — validates script logic, argument construction,
+# and flow control without touching the live org.
+#
+# Runs on every PR that touches governance scripts.
+# Also available as workflow_dispatch for manual testing.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/setup-repo.sh'
+      - '.github/setup-labels.sh'
+  workflow_dispatch:
+
+jobs:
+  dry-run-setup-repo:
+    name: setup-repo.sh (dry-run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Run setup-repo.sh in dry-run mode
+        env:
+          DRY_RUN: "true"
+          ORG: test-org
+          REPO: test-repo
+          DEFAULT_BRANCH: main
+          REQUIRED_CHECKS: "Architecture Tests"
+        run: bash .github/setup-repo.sh
+
+  dry-run-setup-labels:
+    name: setup-labels.sh (dry-run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Run setup-labels.sh in dry-run mode
+        env:
+          DRY_RUN: "true"
+          ORG: test-org
+          REPO: test-repo
+        run: bash .github/setup-labels.sh
+
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Run shellcheck on governance scripts
+        run: shellcheck --severity=warning .github/setup-repo.sh .github/setup-labels.sh
