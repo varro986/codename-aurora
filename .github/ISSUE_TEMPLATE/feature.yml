@@ -1,0 +1,75 @@
+name: Feature / User Story
+description: Propose a new feature or user story following the Aurora SDD process.
+title: "[US] "
+labels: ["type:feature", "status:draft"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill in all sections. A story moves to `status:ready` only after the Architect approves the DoR checklist below.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: User story — As a [role], I want [capability], so that [benefit].
+      placeholder: "As an operator, I want ... so that ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria (DoD)
+      description: Numbered list of verifiable, testable conditions.
+      placeholder: "1. Given ... when ... then ...\n2. ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: modules
+    attributes:
+      label: Modules Involved
+      description: Which Aurora modules are touched? (Core, OCR, Translation, UI, Admin)
+      placeholder: "- Aurora.UI\n- Aurora.Core"
+    validations:
+      required: true
+
+  - type: textarea
+    id: adrs
+    attributes:
+      label: Relevant ADRs
+      description: List any ADRs that constrain or inform this story.
+      placeholder: "- ADR-002 (global hotkey)\n- ADR-003 (translation cascade)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: isolation_constraints
+    attributes:
+      label: Isolation Constraints
+      description: Specific namespace or dependency rules that apply to this story.
+      placeholder: "- Aurora.UI must not reference Aurora.OCR directly\n- Use IOcrService via Core"
+    validations:
+      required: false
+
+  - type: textarea
+    id: test_cases
+    attributes:
+      label: Expected Test Cases
+      description: Describe the test scenarios (unit, integration, architecture).
+      placeholder: "- Unit: ...\n- Integration: ...\n- Arch: ..."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: dor
+    attributes:
+      label: Definition of Ready (DoR)
+      description: All items must be checked before moving to `status:ready`.
+      options:
+        - label: Description is written as a user story and is unambiguous
+        - label: Acceptance Criteria are testable and complete
+        - label: Modules and ADR references are listed
+        - label: No forbidden horizontal module dependencies are implied
+        - label: Architect has approved

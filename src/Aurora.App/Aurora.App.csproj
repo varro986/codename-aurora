@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Aurora.App</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aurora.Core\Aurora.Core.csproj" />
+    <ProjectReference Include="..\Aurora.OCR\Aurora.OCR.csproj" />
+    <ProjectReference Include="..\Aurora.Translation\Aurora.Translation.csproj" />
+    <ProjectReference Include="..\Aurora.UI\Aurora.UI.csproj" />
+    <ProjectReference Include="..\Aurora.Admin\Aurora.Admin.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,28 +1,29 @@
-# ADR-000: [Titolo sintetico della decisione architetturale]
+# ADR-XXX — Title
 
-* **Stato:** [Draft / In Valutazione / Approvato / Sostituito]
-* **Data:** YYYY-MM-DD
-* **Autore:** [Nome / Ruolo]
+**Date:** YYYY-MM-DD
+**Status:** Proposed
+**Deciders:** [Role]
 
----
+## Context
 
-## 1. Contesto e Problema
-[Descrivere la necessità di business o la criticità tecnica che richiede una scelta architetturale formale.]
+[Describe the architectural challenge and why a decision is needed. What forces are at play?]
 
-## 2. Opzioni Valutate
-1. **Opzione 1:** [Descrizione breve]
-   * *Pro:* [Vantaggi]
-   * *Contro:* [Svantaggi]
-2. **Opzione 2:** [Descrizione breve]
-   * *Pro:* [Vantaggi]
-   * *Contro:* [Svantaggi]
+## Decision
 
-## 3. Decisione
-[La scelta intrapresa motivata in modo netto.]
+[State the chosen option clearly and concisely — one paragraph maximum.]
 
-## 4. Conseguenze
-* **Impatti Positivi:** [Benefici tecnici e organizzativi]
-* **Rischi e Trade-off:** [Complessità introdotte e strategie di mitigazione]
+## Rationale
 
-## 5. Riferimenti
-* [Link ad altri ADR o documenti di specifiche in /specs/archi.md]
+[Why this option over the alternatives? List the alternatives considered with brief pros/cons.]
+
+- Alternatives considered:
+  - **Option A**: pros / cons
+  - **Option B**: pros / cons
+
+## Consequences
+
+[What changes as a result of this decision? What new constraints are introduced? What follow-up work or user stories does this create?]
+
+## Compliance
+
+[Explicit, enforceable rules for all modules. These are the guardrails code reviewers and NetArchTest enforce.]

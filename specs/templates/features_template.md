@@ -1,25 +1,29 @@
-# [US-XXX] Titolo della User Story
+# [US-XXX] User Story Title
 
-* **Stato:** [Draft / Ready / Active / Review]
-* **Autore:** [Ruolo]
-* **Data Creazione:** YYYY-MM-DD
+* **Status:** [Draft / Ready / Active / Review]
+* **Author:** [Role]
+* **Created:** YYYY-MM-DD
 
 ---
 
-## 1. Descrizione
-In qualità di **[Ruolo]**,  
-voglio **[Funzionalità / Azione]**,  
-affinché **[Beneficio / Valore prodotto]**.
+## 1. Description
 
-## 2. Criteri di Accettazione (DoD)
-* [ ] **AC-01:** [Primo criterio misurabile e verificabile]
-* [ ] **AC-02:** [Secondo criterio misurabile e verificabile]
+As a **[Role]**,  
+I want **[Feature / Action]**,  
+so that **[Benefit / Value delivered]**.
 
-## 3. Guardrail Architetturali
-* **Moduli Coinvolti:** [`Core` / `OCR` / `Translation` / `UI` / `Admin`]
-* **ADR Correlati:** [es. ADR-001]
-* **Vincoli di Isolamento:** [Eventuali regole sui namespace o dipendenze]
+## 2. Acceptance Criteria (DoD)
 
-## 4. Casi di Test Attesi
-* [ ] **Test 1:** [Descrizione del test unitario o di integrazione richiesto]
-* [ ] **Test 2:** [Descrizione del test di regressione/architettura con NetArchTest]
+* [ ] **AC-01:** [First measurable and verifiable criterion]
+* [ ] **AC-02:** [Second measurable and verifiable criterion]
+
+## 3. Architectural Guardrails
+
+* **Modules involved:** [`Core` / `OCR` / `Translation` / `UI` / `Admin`]
+* **Related ADRs:** [e.g. ADR-001]
+* **Isolation constraints:** [Any namespace or dependency rules that apply]
+
+## 4. Expected Test Cases
+
+* [ ] **Test 1:** [Description of required unit or integration test]
+* [ ] **Test 2:** [Description of regression/architecture test with NetArchTest]

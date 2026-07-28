@@ -1,34 +1,66 @@
-# Architettura del Sistema - Code Name Aurora
+# System Architecture — Codename Aurora
 
-> **Pattern:** Modular Monolith (.NET 8.0)  
-> **Riferimento Teorico:** Kamil Grzybek (Modular Monolith Architecture), Sam Newman (Monolith to Microservices).
-
----
-
-## 1. Principi Guida
-
-1. **Unidirezionalità:** Tutte le dipendenze convergono unicamente verso il modulo `Core`.
-2. **Isolamento dei Moduli:** Nessun modulo operativo (`OCR`, `Translation`, `UI`, `Admin`) può referenziare direttamente un altro modulo orizzontale.
-3. **Design by Contract:** Ogni comunicazione tra moduli avviene esclusivamente tramite interfacce astratte definite in `Aurora.Core`.
+> **Pattern:** Modular Monolith (.NET 10)  
+> **References:** Kamil Grzybek (Modular Monolith Architecture), Sam Newman (Monolith to Microservices).
 
 ---
 
-## 2. Diagramma dei Componenti (UML Component Diagram)
+## 1. Guiding Principles
+
+1. **Unidirectionality:** All dependencies converge exclusively toward the `Core` module.
+2. **Module Isolation:** No operational module (`OCR`, `Translation`, `UI`, `Admin`) may directly reference another horizontal module.
+3. **Design by Contract:** All cross-module communication happens exclusively through abstract interfaces defined in `Aurora.Core`.
+
+---
+
+## 2. Component Diagram
 
 ```mermaid
-componentDiagram
-    actor User as Operatore / Legacy Software
+graph TD
+    User(["Operator / Legacy Software"])
+    AppEntry["Aurora.App\n(Composition Root)"]
+    Core["Aurora.Core\n(IOcrService, ITranslationEngine, IAppSettings)"]
+    OCR["Aurora.OCR\n(WinRT OCR Engine)"]
+    Translation["Aurora.Translation\n(Cascading JSON & Fallback)"]
+    UI["Aurora.UI\n(WPF Overlay & Tray Icon)"]
+    Admin["Aurora.Admin\n(Config & GitHub Releases)"]
 
-    package "Code Name Aurora Solution" {
-        [Aurora.Core] as Core : Interfacce pure (IOcrService, ITranslationEngine)
-        [Aurora.OCR] as OCR : WinRT OCR Engine
-        [Aurora.Translation] as Translation : Cascading JSON & Fallback
-        [Aurora.UI] as UI : WPF Overlay & Tray Icon
-        [Aurora.Admin] as Admin : Config & GitHub Releases
-    }
+    User -->|"Triggers Hotkey / Views Overlay"| UI
+    AppEntry -->|"Bootstraps & wires DI"| UI
+    AppEntry -->|"Bootstraps & wires DI"| OCR
+    AppEntry -->|"Bootstraps & wires DI"| Translation
+    AppEntry -->|"Bootstraps & wires DI"| Admin
+    UI -->|"Uses contracts"| Core
+    OCR -->|"Implements IOcrService"| Core
+    Translation -->|"Implements ITranslationEngine"| Core
+    Admin -->|"Configures global state"| Core
+```
 
-    User --> UI : Attiva Hotkey / Visualizza Overlay
-    UI --> Core : Utilizza contratti
-    OCR --> Core : Implementa IOcrService
-    Translation --> Core : Implementa ITranslationEngine
-    Admin --> Core : Configura stato globale
+---
+
+## 3. Package / Dependency Diagram
+
+Compilation-time dependencies between .NET projects. Arrows point toward the depended-on project.
+
+> **Rule:** No horizontal arrows are allowed. Any dependency not pointing to `Aurora.Core` is a build-breaking architectural violation enforced by `Aurora.Tests.Architecture`.
+
+```mermaid
+classDiagram
+    direction BT
+    class AppEntry["Aurora.App"]
+    class Core["Aurora.Core"]
+    class OCR["Aurora.OCR"]
+    class Translation["Aurora.Translation"]
+    class UI["Aurora.UI"]
+    class Admin["Aurora.Admin"]
+
+    OCR ..> Core
+    Translation ..> Core
+    UI ..> Core
+    Admin ..> Core
+    AppEntry ..> Core
+    AppEntry ..> OCR
+    AppEntry ..> Translation
+    AppEntry ..> UI
+    AppEntry ..> Admin
+```
