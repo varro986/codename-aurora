@@ -5,8 +5,9 @@ name: Branch from Issue
 #
 # Behaviour:
 #   1. Creates branch us-{number}/{title-slug} from main.
-#   2. Swaps label status:ready → status:active on the issue.
-#   3. Comments on the issue with the branch name and checkout command.
+#   2. Commits the issue body as specs/features/{US-XXX}-{slug}.md on the branch.
+#   3. Swaps label status:ready → status:active on the issue.
+#   4. Comments on the issue with the branch name and checkout command.
 #
 # dry_run mode (workflow_dispatch only): logs all actions without executing.
 
@@ -38,8 +39,8 @@ jobs:
           script: |
             const dryRun = context.eventName === 'workflow_dispatch' && ${{ inputs.dry_run == true }};
 
-            // Resolve issue number and title from event or manual input.
-            let issueNumber, issueTitle;
+            // Resolve issue number, title and body from event or manual input.
+            let issueNumber, issueTitle, issueBody;
             if (context.eventName === 'workflow_dispatch') {
               issueNumber = ${{ inputs.issue_number || 0 }};
               const { data: issue } = await github.rest.issues.get({
@@ -48,11 +49,14 @@ jobs:
                 issue_number: issueNumber
               });
               issueTitle = issue.title;
+              issueBody  = issue.body || '';
             } else {
               issueNumber = context.payload.issue.number;
-              issueTitle = context.payload.issue.title;
+              issueTitle  = context.payload.issue.title;
+              issueBody   = context.payload.issue.body || '';
             }
 
+            // Branch slug from full title.
             const slug = issueTitle
               .toLowerCase()
               .replace(/[^a-z0-9]+/g, '-')
@@ -60,24 +64,41 @@ jobs:
               .substring(0, 50);
             const branch = `us-${issueNumber}/${slug}`;
 
+            // Spec filename: extract [US-XXX] prefix from title if present,
+            // otherwise fall back to us-{issueNumber}.
+            const usMatch = issueTitle.match(/^\[?(US-\d+)\]?\s+(.+)$/i);
+            let specFilename;
+            if (usMatch) {
+              const usNum      = usMatch[1].toUpperCase();
+              const titleSlug  = usMatch[2]
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '');
+              specFilename = `specs/features/${usNum}-${titleSlug}.md`;
+            } else {
+              specFilename = `specs/features/us-${issueNumber}-${slug}.md`;
+            }
+
             core.info(`Issue #${issueNumber}: "${issueTitle}"`);
-            core.info(`Target branch: ${branch}`);
+            core.info(`Target branch:  ${branch}`);
+            core.info(`Spec file:      ${specFilename}`);
 
             if (dryRun) {
               core.info('[DRY RUN] Would create branch: ' + branch);
-              core.info('[DRY RUN] Would remove label: status:ready');
-              core.info('[DRY RUN] Would add label:    status:active');
+              core.info('[DRY RUN] Would commit spec:   ' + specFilename);
+              core.info('[DRY RUN] Would remove label:  status:ready');
+              core.info('[DRY RUN] Would add label:     status:active');
               core.info('[DRY RUN] Would comment on issue #' + issueNumber);
               return;
             }
 
-            // Guard: empty slug means the title had only special characters.
+            // Guard: empty slug.
             if (!slug) {
               core.setFailed(`Issue #${issueNumber} title "${issueTitle}" produces an empty branch slug. Rename the issue.`);
               return;
             }
 
-            // Get default branch SHA dynamically — do not assume "main".
+            // Get default branch SHA.
             const { data: repoData } = await github.rest.repos.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -88,7 +109,8 @@ jobs:
               ref: `heads/${repoData.default_branch}`
             });
 
-            // Create branch — idempotent: if it already exists (e.g. label re-applied by mistake), skip silently.
+            // Create branch — idempotent.
+            let branchCreated = false;
             try {
               await github.rest.git.createRef({
                 owner: context.repo.owner,
@@ -96,6 +118,7 @@ jobs:
                 ref: `refs/heads/${branch}`,
                 sha: ref.object.sha
               });
+              branchCreated = true;
             } catch (e) {
               if (e.status === 422) {
                 core.warning(`Branch ${branch} already exists — skipping creation.`);
@@ -104,11 +127,29 @@ jobs:
               }
             }
 
+            // Commit spec file onto the branch (only if branch was just created).
+            if (branchCreated && issueBody.trim()) {
+              const content = Buffer.from(issueBody).toString('base64');
+              try {
+                await github.rest.repos.createOrUpdateFileContents({
+                  owner:   context.repo.owner,
+                  repo:    context.repo.repo,
+                  path:    specFilename,
+                  message: `spec: add ${specFilename} from issue #${issueNumber}`,
+                  content: content,
+                  branch:  branch
+                });
+                core.info(`Spec committed: ${specFilename}`);
+              } catch (e) {
+                core.warning(`Could not commit spec file: ${e.message}`);
+              }
+            }
+
             // Swap labels.
             try {
               await github.rest.issues.removeLabel({
                 owner: context.repo.owner,
-                repo: context.repo.repo,
+                repo:  context.repo.repo,
                 issue_number: issueNumber,
                 name: 'status:ready'
               });
@@ -117,7 +158,7 @@ jobs:
             }
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
-              repo: context.repo.repo,
+              repo:  context.repo.repo,
               issue_number: issueNumber,
               labels: ['status:active']
             });
@@ -125,9 +166,9 @@ jobs:
             // Comment on issue.
             await github.rest.issues.createComment({
               owner: context.repo.owner,
-              repo: context.repo.repo,
+              repo:  context.repo.repo,
               issue_number: issueNumber,
-              body: `Branch ready: \`${branch}\`\n\n\`\`\`bash\ngit checkout ${branch}\n\`\`\``
+              body: `Branch ready: \`${branch}\`\n\nSpec committed: \`${specFilename}\`\n\n\`\`\`bash\ngit checkout ${branch}\n\`\`\``
             });
 
-            core.info(`Done — branch ${branch} created, issue moved to status:active.`);
+            core.info(`Done — branch ${branch} created, spec committed, issue moved to status:active.`);
