@@ -1,0 +1,133 @@
+name: Branch from Issue
+
+# Triggered automatically when an issue receives status:ready.
+# Also available as manual workflow_dispatch for dry-run testing.
+#
+# Behaviour:
+#   1. Creates branch us-{number}/{title-slug} from main.
+#   2. Swaps label status:ready → status:active on the issue.
+#   3. Comments on the issue with the branch name and checkout command.
+#
+# dry_run mode (workflow_dispatch only): logs all actions without executing.
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to test with
+        required: true
+        type: number
+      dry_run:
+        description: Log actions without executing (test mode)
+        default: true
+        type: boolean
+
+jobs:
+  create-branch:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'status:ready'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        with:
+          script: |
+            const dryRun = context.eventName === 'workflow_dispatch' && ${{ inputs.dry_run == true }};
+
+            // Resolve issue number and title from event or manual input.
+            let issueNumber, issueTitle;
+            if (context.eventName === 'workflow_dispatch') {
+              issueNumber = ${{ inputs.issue_number || 0 }};
+              const { data: issue } = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber
+              });
+              issueTitle = issue.title;
+            } else {
+              issueNumber = context.payload.issue.number;
+              issueTitle = context.payload.issue.title;
+            }
+
+            const slug = issueTitle
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, '')
+              .substring(0, 50);
+            const branch = `us-${issueNumber}/${slug}`;
+
+            core.info(`Issue #${issueNumber}: "${issueTitle}"`);
+            core.info(`Target branch: ${branch}`);
+
+            if (dryRun) {
+              core.info('[DRY RUN] Would create branch: ' + branch);
+              core.info('[DRY RUN] Would remove label: status:ready');
+              core.info('[DRY RUN] Would add label:    status:active');
+              core.info('[DRY RUN] Would comment on issue #' + issueNumber);
+              return;
+            }
+
+            // Guard: empty slug means the title had only special characters.
+            if (!slug) {
+              core.setFailed(`Issue #${issueNumber} title "${issueTitle}" produces an empty branch slug. Rename the issue.`);
+              return;
+            }
+
+            // Get default branch SHA dynamically — do not assume "main".
+            const { data: repoData } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const { data: ref } = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${repoData.default_branch}`
+            });
+
+            // Create branch — idempotent: if it already exists (e.g. label re-applied by mistake), skip silently.
+            try {
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/heads/${branch}`,
+                sha: ref.object.sha
+              });
+            } catch (e) {
+              if (e.status === 422) {
+                core.warning(`Branch ${branch} already exists — skipping creation.`);
+              } else {
+                throw e;
+              }
+            }
+
+            // Swap labels.
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                name: 'status:ready'
+              });
+            } catch (e) {
+              core.warning('Could not remove status:ready: ' + e.message);
+            }
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['status:active']
+            });
+
+            // Comment on issue.
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `Branch ready: \`${branch}\`\n\n\`\`\`bash\ngit checkout ${branch}\n\`\`\``
+            });
+
+            core.info(`Done — branch ${branch} created, issue moved to status:active.`);

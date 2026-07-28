@@ -1,0 +1,55 @@
+name: Governance Setup
+
+# Manual trigger only — runs setup-repo.sh against the live org.
+# Requires approval from the "governance" GitHub Actions Environment before execution.
+# Every run is logged in the Actions tab with actor, inputs, and full output.
+#
+# Prerequisites (one-time, done by org Owner):
+#   1. Create Environment "governance" in repo Settings → Environments.
+#   2. Add required reviewers (architects team or org Owner).
+#   3. Add secret ORG_ADMIN_TOKEN with an org Owner PAT scoped to:
+#      admin:org, repo (for team and branch protection APIs).
+
+on:
+  workflow_dispatch:
+    inputs:
+      org:
+        description: 'GitHub organisation slug'
+        required: true
+        type: string
+      repo:
+        description: 'Repository name'
+        required: true
+        default: 'codename-aurora'
+        type: string
+      default_branch:
+        description: 'Branch to protect'
+        required: false
+        default: 'main'
+        type: string
+      required_checks:
+        description: 'Comma-separated CI check names (e.g. "Architecture Tests")'
+        required: false
+        default: 'Architecture Tests'
+        type: string
+
+jobs:
+  setup:
+    name: Apply Repository Governance
+    runs-on: ubuntu-latest
+    environment: governance  # Requires approval before execution
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Authenticate gh CLI
+        # gh is pre-installed on ubuntu-latest runners.
+        run: echo "${{ secrets.ORG_ADMIN_TOKEN }}" | gh auth login --with-token
+
+      - name: Run setup-repo.sh
+        env:
+          ORG: ${{ inputs.org }}
+          REPO: ${{ inputs.repo }}
+          DEFAULT_BRANCH: ${{ inputs.default_branch }}
+          REQUIRED_CHECKS: ${{ inputs.required_checks }}
+        run: bash .github/setup-repo.sh

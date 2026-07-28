@@ -1,0 +1,18 @@
+# CODEOWNERS — enforced by branch protection (require_code_owner_reviews: true)
+# Format: path  @YOUR-ORG/team-slug
+# Replace YOUR-ORG with the actual GitHub org name before pushing.
+#
+# Rules are evaluated top-to-bottom; the last matching rule wins.
+# The catch-all (*) at the top covers every file not matched by a specific rule below.
+
+# Catch-all: any file not covered below → Lead Dev review required
+*                @YOUR-ORG/lead-devs
+
+# Architectural specs and CI governance → Architect review required
+/specs/adr/      @YOUR-ORG/architects
+/specs/archi.md  @YOUR-ORG/architects
+/.github/        @YOUR-ORG/architects
+
+# Source code and tests → Lead Dev review required (explicit, consistent with catch-all)
+/src/            @YOUR-ORG/lead-devs
+/tests/          @YOUR-ORG/lead-devs

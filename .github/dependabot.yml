@@ -1,0 +1,31 @@
+version: 2
+
+updates:
+  # NuGet — .NET dependencies
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels:
+      - "type:dependency"
+    groups:
+      dotnet-test:
+        patterns:
+          - "Microsoft.NET.Test.Sdk"
+          - "xunit*"
+          - "coverlet*"
+      netarchtest:
+        patterns:
+          - "NetArchTest*"
+
+  # GitHub Actions — workflow dependencies
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels:
+      - "type:dependency"

@@ -1,0 +1,60 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src\Aurora.App\Aurora.App.csproj" />
+    <Project Path="src\Aurora.Core\Aurora.Core.csproj" />
+    <Project Path="src\Aurora.OCR\Aurora.OCR.csproj" />
+    <Project Path="src\Aurora.Translation\Aurora.Translation.csproj" />
+    <Project Path="src\Aurora.UI\Aurora.UI.csproj" />
+    <Project Path="src\Aurora.Admin\Aurora.Admin.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests\Aurora.Tests.Architecture\Aurora.Tests.Architecture.csproj" />
+  </Folder>
+  <Folder Name="/specs/">
+    <File Path="specs\archi.md" />
+    <Folder Name="/specs/adr/">
+      <File Path="specs\adr\0001-modular-monolith.md" />
+      <File Path="specs\adr\0002-global-hotkey.md" />
+      <File Path="specs\adr\0003-translation-cascade.md" />
+      <File Path="specs\adr\0004-local-translation-model.md" />
+      <File Path="specs\adr\0005-auto-update.md" />
+      <File Path="specs\adr\0006-admin-core-contract.md" />
+      <File Path="specs\adr\0007-composition-root.md" />
+      <File Path="specs\adr\0008-model-manager.md" />
+    </Folder>
+    <Folder Name="/specs/features/">
+      <File Path="specs\features\US-001-app-settings.md" />
+    </Folder>
+    <Folder Name="/specs/templates/">
+      <File Path="specs\templates\adr_template.md" />
+      <File Path="specs\templates\features_template.md" />
+    </Folder>
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="CLAUDE.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/github/">
+    <File Path=".github\CODEOWNERS" />
+    <File Path=".github\dependabot.yml" />
+    <File Path=".github\setup-labels.sh" />
+    <File Path=".github\setup-repo.sh" />
+    <Folder Name="/github/ISSUE_TEMPLATE/">
+      <File Path=".github\ISSUE_TEMPLATE\feature.yml" />
+    </Folder>
+    <Folder Name="/github/workflows/">
+      <File Path=".github\workflows\ci.yml" />
+      <File Path=".github\workflows\release.yml" />
+      <File Path=".github\workflows\governance.yml" />
+      <File Path=".github\workflows\branch-from-issue.yml" />
+      <File Path=".github\workflows\issue-lifecycle.yml" />
+      <File Path=".github\workflows\lint.yml" />
+      <File Path=".github\workflows\test-governance.yml" />
+    </Folder>
+  </Folder>
+</Solution>
