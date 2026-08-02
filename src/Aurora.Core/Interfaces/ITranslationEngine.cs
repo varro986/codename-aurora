@@ -1,6 +1,8 @@
+using Aurora.Core;
+
 namespace Aurora.Core.Interfaces;
 
 public interface ITranslationEngine
 {
-    Task<string> TranslateAsync(string text, string targetLanguage, CancellationToken cancellationToken = default);
+    Task<TranslationResult> TranslateAsync(string text, CancellationToken ct = default);
 }

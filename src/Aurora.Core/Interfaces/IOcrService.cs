@@ -2,5 +2,5 @@ namespace Aurora.Core.Interfaces;
 
 public interface IOcrService
 {
-    Task<string> RecognizeTextAsync(byte[] imageData, CancellationToken cancellationToken = default);
+    Task<string> RecognizeAsync(byte[] imageBytes, string language, CancellationToken ct = default);
 }

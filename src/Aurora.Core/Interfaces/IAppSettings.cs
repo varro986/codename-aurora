@@ -10,4 +10,9 @@ public interface IAppSettings
     string GenericDictionaryPath { get; }
     string ModelCachePath { get; }
     string UpdateChannel { get; }
+    TimeSpan OverlayDismissTimeout { get; }
+    string OverlayBackgroundColor { get; }
+    string OverlayForegroundColor { get; }
+    int HoverDwellThreshold { get; }
+    int RulloSamplingInterval { get; }
 }

@@ -11,7 +11,7 @@ A Windows desktop tool that captures text from the screen via OCR and translates
 
 ## Architecture
 
-Modular Monolith (.NET 10) — six projects, five of which depend exclusively on `Aurora.Core` contracts. `Aurora.App` is the composition root and the only project permitted to reference all modules (ADR-007). No direct dependencies between operational modules are allowed and are enforced at CI time by NetArchTest.
+Modular Monolith (.NET 10) — six projects, five of which depend exclusively on `Aurora.Core` contracts. `Aurora.App` is the composition root and the only project permitted to reference all modules (ADR-001). No direct dependencies between operational modules are allowed and are enforced at CI time by NetArchTest.
 
 ```
 src/Aurora.App           ← WinExe entry point, DI composition root
@@ -27,7 +27,7 @@ See [`specs/archi.md`](specs/archi.md) for the full architecture document and [`
 
 ## Requirements
 
-- Windows 10 22H2 (10.0.22621) or later
+- Windows 11 (10.0.22621) or later
 - .NET 10 SDK
 
 ## Building
@@ -60,6 +60,7 @@ Org-level teams, no project prefix — reusable across repos:
 | `lead-devs` | Maintain | Lead Dev |
 | `analysts` | Triage | Business Analyst |
 | `contributors` | Write | Contributor |
+| `requestors` | Read | Feature requestors — submit via Issues |
 
 Teams are created idempotently by `.github/setup-repo.sh`.
 
@@ -69,10 +70,15 @@ User stories are tracked as GitHub Issues with the following label states:
 
 | Label | Meaning | Gate |
 |---|---|---|
-| `status:draft` | Story being written | — |
-| `status:ready` | DoR met, ready for dev | Architect approval |
-| `status:active` | In development | — |
-| `status:review` | PR open, DoD check | Lead Dev + Architect merge |
+| `status:request` | Requestor submitted — awaiting AI screening + BA decision | — |
+| `status:draft` | BA writing or editing — spec-review AI runs automatically | — |
+| `status:ready` | Both `approved:ba` + `approved:leaddev` present (or Architect bypass) | Branch auto-created |
+| `status:active` | Branch created — in development | — |
+| `status:review` | PR open — DoD check pending | Lead Dev + Architect merge |
+| `status:uat` | Released — requestor UAT pending | Requestor closes the issue |
+| `approved:ba` | BA approved this story | — |
+| `approved:leaddev` | Lead Dev approved this story | — |
+| `ai-review:1/2/3` | AI spec-review round tracking (escalates to Lead Dev at round 3) | — |
 
 See `.github/ISSUE_TEMPLATE/feature.yml` for the story template and `.github/setup-labels.sh` to initialise the GitHub label set.
 

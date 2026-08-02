@@ -25,7 +25,23 @@ jobs:
       - name: Architecture tests
         run: dotnet test --filter "Category=Architecture" --no-build --configuration Release
 
-      # TODO: add full test suite run when unit/integration projects exist
+      - name: Unit tests
+        run: dotnet test --filter "Category!=Architecture" --no-build --configuration Release
 
-      # Velopack packaging and GitHub Releases publish steps
-      # will be added by the auto-update user story (ADR-005).
+      - name: Create or update GitHub Release with auto-generated notes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit $tag --title "Aurora $tag"
+          } else {
+            gh release create $tag `
+              --title "Aurora $tag" `
+              --generate-notes
+          }
+
+      # Velopack packaging steps will be added when the signing certificate
+      # and Velopack feed are provisioned (post-MVP).

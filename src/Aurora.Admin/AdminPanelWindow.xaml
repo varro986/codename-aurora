@@ -1,0 +1,57 @@
+<Window x:Class="Aurora.Admin.AdminPanelWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Aurora — Settings"
+        Width="500" Height="480"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="180"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Overlay Background Color:" VerticalAlignment="Center" Margin="0,6"/>
+        <TextBox x:Name="OverlayBgColorBox" Grid.Row="0" Grid.Column="1" Margin="0,4"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Overlay Foreground Color:" VerticalAlignment="Center" Margin="0,6"/>
+        <TextBox x:Name="OverlayFgColorBox" Grid.Row="1" Grid.Column="1" Margin="0,4"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Private Dictionary Path:" VerticalAlignment="Center" Margin="0,6"/>
+        <TextBox x:Name="PrivateDictBox" Grid.Row="2" Grid.Column="1" Margin="0,4"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Generic Dictionary Path:" VerticalAlignment="Center" Margin="0,6"/>
+        <TextBox x:Name="GenericDictBox" Grid.Row="3" Grid.Column="1" Margin="0,4"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="Update Channel:" VerticalAlignment="Center" Margin="0,6"/>
+        <TextBox x:Name="UpdateChannelBox" Grid.Row="4" Grid.Column="1" Margin="0,4"/>
+
+        <TextBlock Grid.Row="5" Grid.Column="0" Text="Model Cache Path:" VerticalAlignment="Center" Margin="0,6"/>
+        <TextBox x:Name="ModelCachePathBox" Grid.Row="5" Grid.Column="1" Margin="0,4"/>
+
+        <Button x:Name="DownloadModelButton" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                Content="Download ONNX Model" HorizontalAlignment="Left"
+                Click="DownloadModel_Click" Margin="0,4"/>
+
+        <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                   Text="Changes take effect on next restart." Foreground="Gray"
+                   FontStyle="Italic" Margin="0,12,0,0" VerticalAlignment="Bottom"/>
+
+        <StackPanel Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                    Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button x:Name="SaveButton" Content="Save" Width="80" Click="SaveButton_Click" Margin="0,0,8,0"/>
+            <Button x:Name="CancelButton" Content="Cancel" Width="80" Click="CancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

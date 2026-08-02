@@ -1,0 +1,17 @@
+<Window x:Class="Aurora.UI.HoverGlossaryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Width="300" Height="Auto"
+        SizeToContent="Height">
+    <Border Background="#EEF0F2" CornerRadius="4" BorderBrush="#CCCCCC" BorderThickness="1" Padding="10,8">
+        <StackPanel>
+            <TextBlock x:Name="WordText" FontSize="13" FontWeight="Bold" Foreground="#111111" />
+            <TextBlock x:Name="DetailText" FontSize="12" Foreground="#333333" TextWrapping="Wrap" Margin="0,4,0,0" />
+        </StackPanel>
+    </Border>
+</Window>

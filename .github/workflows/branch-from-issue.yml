@@ -127,8 +127,8 @@ jobs:
               }
             }
 
-            // Commit spec file onto the branch (only if branch was just created).
-            if (branchCreated && issueBody.trim()) {
+            // Commit spec file onto the branch (always attempt — handles re-runs on existing branches).
+            if (issueBody.trim()) {
               const content = Buffer.from(issueBody).toString('base64');
               try {
                 await github.rest.repos.createOrUpdateFileContents({

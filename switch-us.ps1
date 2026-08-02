@@ -21,7 +21,7 @@ $activeWorktrees = git worktree list --porcelain |
 
 $toRemove = @()
 foreach ($wt in $activeWorktrees) {
-    $issueNum = ($wt -match '-us-(\d+)$') ? $Matches[1] : $null
+    $issueNum = if ($wt -match '-us-(\d+)$') { $Matches[1] } else { $null }
     if (-not $issueNum) { continue }
     $state = gh issue view $issueNum --repo $repo --json state --jq '.state' 2>$null
     if ($state -eq 'CLOSED') { $toRemove += $wt }
@@ -47,19 +47,19 @@ Write-Host ""
 Write-Host "Fetching remote branches..." -ForegroundColor Cyan
 git fetch --prune | Out-Null
 
-$branches = git branch -r |
+$branches = @(git branch -r |
     Where-Object { $_ -match 'origin/us-\d+/' } |
     ForEach-Object { $_.Trim() -replace '^origin/', '' } |
-    Sort-Object
+    Sort-Object)
 
 if ($branches.Count -eq 0) {
     Write-Host "No us-* branches found on remote." -ForegroundColor Yellow
     exit 0
 }
 
-$wtPaths = git worktree list --porcelain |
+$wtPaths = @(git worktree list --porcelain |
     Select-String -Pattern '^worktree ' |
-    ForEach-Object { $_.Line -replace '^worktree ', '' }
+    ForEach-Object { $_.Line -replace '^worktree ', '' })
 
 Write-Host ""
 Write-Host "Available user story branches:" -ForegroundColor Cyan
@@ -86,7 +86,7 @@ $wtPath   = Join-Path $parentDir "$repoName-us-$issueNum"
 
 if (Test-Path $wtPath) {
     Write-Host ""
-    Write-Host "Worktree already exists — opening: $wtPath" -ForegroundColor Yellow
+    Write-Host "Worktree already exists -> opening: $wtPath" -ForegroundColor Yellow
 } else {
     Write-Host ""
     Write-Host "Creating worktree at: $wtPath" -ForegroundColor Green

@@ -1,0 +1,169 @@
+name: Spec Review
+
+# Triggered when a US issue is edited or receives status:draft.
+# Calls Claude to check for contradictions against archi.md and existing US files.
+# Tracks review rounds via ai-review:N labels. After round 3, escalates to Lead Dev.
+# Concurrency: only one review runs per issue at a time; newer edits cancel in-flight reviews.
+
+on:
+  issues:
+    types: [edited, labeled]
+
+jobs:
+  review:
+    # Only run on open issues with status:draft, not yet at round 3, not yet downstream.
+    if: |
+      github.event.issue.state == 'open' &&
+      contains(github.event.issue.labels.*.name, 'status:draft') &&
+      !contains(github.event.issue.labels.*.name, 'status:ready') &&
+      !contains(github.event.issue.labels.*.name, 'status:active') &&
+      !contains(github.event.issue.labels.*.name, 'ai-review:3')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: spec-review-${{ github.event.issue.number }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: Determine review round
+        id: round
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        with:
+          result-encoding: string
+          script: |
+            const labels = context.payload.issue.labels.map(l => l.name);
+            if (labels.includes('ai-review:2')) return '2';
+            if (labels.includes('ai-review:1')) return '1';
+            return '0';
+
+      - name: Run AI spec review
+        id: ai
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          ARCHI=$(cat specs/archi.md)
+          US_FILES=$(cat specs/features/*.md 2>/dev/null || echo "")
+          ROUND=$(( ${{ steps.round.outputs.result }} + 1 ))
+
+          STATIC_PROMPT="You are reviewing a user story for the Codename Aurora project.
+
+          ## Architecture reference (source of truth)
+          ${ARCHI}
+
+          ## Existing user stories
+          ${US_FILES}
+
+          ## Task
+          Check the new user story for:
+          1. Contradictions with the architecture (isolation rules, IAppSettings fields, module assignments, MediatR contract)
+          2. Overlaps with existing user stories (duplicate scope)
+          3. AC that are not verifiable or testable
+          4. Missing implications (behavior changes not declared)
+
+          If no issues found, start your response with: APPROVED
+          If issues found, start with: ISSUES FOUND
+          Then list each problem as a bullet point with a concrete fix suggestion.
+          Be brief and direct. No preamble."
+
+          PAYLOAD=$(jq -n \
+            --arg model "claude-sonnet-5" \
+            --arg prompt "$STATIC_PROMPT" \
+            --arg body "$ISSUE_BODY" \
+            --arg round "$ROUND" \
+            '{model: $model, max_tokens: 1024, messages: [{role: "user", content: ($prompt + "\n\n## New user story (round " + $round + "/3)\n" + $body)}]}')
+
+          RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "$PAYLOAD")
+
+          CONTENT=$(echo "$RESPONSE" | jq -r '.content[0].text // "ERROR: could not parse API response"')
+          echo "review_result<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "round=${ROUND}" >> $GITHUB_OUTPUT
+
+          if echo "$CONTENT" | grep -q "^APPROVED"; then
+            echo "approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "approved=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post review comment and update labels
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        env:
+          REVIEW_RESULT: ${{ steps.ai.outputs.review_result }}
+          ROUND: ${{ steps.ai.outputs.round }}
+          APPROVED: ${{ steps.ai.outputs.approved }}
+        with:
+          script: |
+            const round    = parseInt(process.env.ROUND);
+            const approved = process.env.APPROVED === 'true';
+            const result   = process.env.REVIEW_RESULT;
+            const issueNum = context.payload.issue.number;
+
+            // Build comment
+            const header = approved
+              ? `**AI Spec Review — Round ${round}/3 — APPROVED**`
+              : `**AI Spec Review — Round ${round}/3 — ISSUES FOUND**`;
+
+            let footer;
+            if (approved) {
+              footer = '_This story is cleared by AI review. A Lead Dev can now set `status:ready`._';
+            } else if (round < 3) {
+              footer = `_Please address the issues above and edit the story. Round ${round + 1}/3 will run automatically._`;
+            } else {
+              footer = '_Round 3 complete. Lead Dev escalation triggered (see below)._';
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: issueNum,
+              body: `${header}\n\n${result}\n\n---\n${footer}`
+            });
+
+            // Remove all previous ai-review labels
+            const currentLabels = context.payload.issue.labels.map(l => l.name);
+            for (const label of ['ai-review:1', 'ai-review:2', 'ai-review:3']) {
+              if (currentLabels.includes(label)) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner, repo: context.repo.repo,
+                    issue_number: issueNum, name: label
+                  });
+                } catch (_) {}
+              }
+            }
+
+            // Add new ai-review label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: issueNum,
+              labels: [`ai-review:${round}`]
+            });
+
+            // Escalate at round 3
+            if (round === 3 && !approved) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issueNum,
+                body: [
+                  '> **AI review exhausted (3/3 rounds).**',
+                  '',
+                  'Contradictions were not resolved after 3 iterations.',
+                  `A member of @${context.repo.owner}/lead-devs must review and decide whether to approve or reject this story.`,
+                  '',
+                  `⚠️ Round 3 reached — escalating to @${context.repo.owner}/lead-devs for manual review.`,
+                ].join('\n')
+              });
+              core.info('Escalated to lead-devs — no further AI review will run.');
+            }

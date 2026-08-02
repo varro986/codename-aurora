@@ -33,6 +33,8 @@ on:
         default: 'Architecture Tests'
         type: string
 
+permissions: {}
+
 jobs:
   setup:
     name: Apply Repository Governance

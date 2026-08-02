@@ -1,18 +1,20 @@
 name: Issue Lifecycle
 
-# Triggered when a PR is opened or reopened.
-# If the branch follows the us-{number}/ convention, moves the linked issue
-# from status:active to status:review automatically.
+# Triggered when a PR is opened, reopened, or closed.
+# pull_request_target runs in the base-repo context, so GITHUB_TOKEN has write access
+# even for PRs from forks — safe here because we do not check out or execute PR code.
 #
-# Closing the issue (status:done) is handled natively by GitHub when the PR
-# is merged and the PR body contains "Closes #N".
+# opened/reopened: moves linked issue from status:active → status:review.
+# closed (not merged): rolls back linked issue from status:review → status:active.
+# closed (merged): GitHub handles issue close natively via "Closes #N" in the PR body.
 
 on:
-  pull_request:
-    types: [opened, reopened]
+  pull_request_target:
+    types: [opened, reopened, closed]
 
 jobs:
-  update-issue:
+  update-issue-on-open:
+    if: github.event.action == 'opened' || github.event.action == 'reopened'
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -51,3 +53,48 @@ jobs:
             });
 
             core.info(`Issue #${issueNumber} moved to status:review.`);
+
+  reopen-on-abandoned-pr:
+    if: |
+      github.event.action == 'closed' &&
+      !github.event.pull_request.merged &&
+      startsWith(github.event.pull_request.head.ref, 'us-')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Roll back issue to status:active
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+
+            // Extract linked issue number from "Closes/Fixes/Resolves #N"
+            const match = body.match(/(?:closes|fixes|resolves)\s+#(\d+)/i);
+            if (!match) {
+              core.info('No linked issue found in PR body — skipping rollback.');
+              return;
+            }
+            const issueNumber = parseInt(match[1], 10);
+
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issueNumber, name: 'status:review'
+              });
+            } catch (_) {}
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: issueNumber, labels: ['status:active']
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `🔄 PR #${pr.number} was closed without merging. Issue rolled back to \`status:active\` — development can resume.`
+            });
+
+            core.info(`Issue #${issueNumber} rolled back to status:active.`);

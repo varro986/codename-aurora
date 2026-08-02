@@ -102,6 +102,7 @@ ARCH_ID=$(ensure_team "architects"   "Architects"   "Architects — ADR approval
           ensure_team "lead-devs"    "Lead Devs"    "Lead Developers — code review and merge" >/dev/null
           ensure_team "analysts"     "Analysts"     "Business Analysts — user story authoring" >/dev/null
           ensure_team "contributors" "Contributors" "Contributors — feature development" >/dev/null
+          ensure_team "requestors"   "Requestors"   "Requestors — submit feature requests via issues" >/dev/null
 
 # ── 2. Repo permissions ────────────────────────────────────────────────────
 echo "→ Repo permissions"
@@ -109,6 +110,7 @@ assign_team "architects"   "admin"
 assign_team "lead-devs"    "maintain"
 assign_team "analysts"     "triage"
 assign_team "contributors" "push"
+assign_team "requestors"   "pull"
 
 # ── 3. Auto-calibrate required reviewers ──────────────────────────────────
 # 0 if architects has <2 members (solo mode), 1 otherwise.

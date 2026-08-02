@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   architecture-tests:
     name: Architecture Tests
@@ -20,3 +23,6 @@ jobs:
 
       - name: Architecture tests
         run: dotnet test --filter "Category=Architecture" --no-build --configuration Release
+
+      - name: Unit tests
+        run: dotnet test --filter "Category!=Architecture" --no-build --configuration Release

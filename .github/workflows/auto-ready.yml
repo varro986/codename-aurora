@@ -1,0 +1,85 @@
+name: Auto Ready
+
+# When an issue receives approved:ba or approved:leaddev,
+# checks if BOTH approvals are now present. If yes, applies status:ready automatically.
+# Architect can bypass by applying status:ready directly (skips this workflow entirely).
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  check-approvals:
+    if: |
+      (github.event.label.name == 'approved:ba' || github.event.label.name == 'approved:leaddev') &&
+      github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    concurrency:
+      group: auto-ready-${{ github.event.issue.number }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Apply status:ready if both approvals present
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        with:
+          script: |
+            // Live read to avoid race condition when both approvals land simultaneously.
+            const { data: liveIssue } = await github.rest.issues.get({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.payload.issue.number
+            });
+            const labels = liveIssue.labels.map(l => l.name);
+
+            const hasBa      = labels.includes('approved:ba');
+            const hasLeadDev = labels.includes('approved:leaddev');
+
+            // Guard: already in a downstream state — no double-trigger
+            const downstream = ['status:ready', 'status:active', 'status:review', 'status:uat'];
+            if (downstream.some(l => labels.includes(l))) {
+              core.info('Issue already in a downstream state — skipping.');
+              return;
+            }
+
+            if (!hasBa || !hasLeadDev) {
+              core.info(`Waiting for both approvals — ba:${hasBa} leaddev:${hasLeadDev}`);
+              return;
+            }
+
+            const issueNumber = context.payload.issue.number;
+
+            // Consume approval labels
+            for (const label of ['approved:ba', 'approved:leaddev']) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: issueNumber, name: label
+                });
+              } catch (_) {}
+            }
+
+            // Clean up spec-review labels and status:draft
+            for (const stale of ['status:draft', 'ai-review:1', 'ai-review:2', 'ai-review:3']) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: issueNumber, name: stale
+                });
+              } catch (_) {}
+            }
+
+            // Apply status:ready — triggers branch-from-issue.yml
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['status:ready']
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: '✅ Both approvals received (`approved:ba` + `approved:leaddev`). `status:ready` applied — branch will be created automatically.'
+            });
+
+            core.info(`Issue #${issueNumber} promoted to status:ready.`);

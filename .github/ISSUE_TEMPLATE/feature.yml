@@ -1,18 +1,28 @@
-name: Feature / User Story
-description: Propose a new feature or user story following the Aurora SDD process.
+name: User Story
+description: Propose a new feature. AI will review for contradictions before Lead Dev approval.
 title: "[US] "
-labels: ["type:feature", "status:draft"]
+labels: ["status:draft"]
 body:
   - type: markdown
     attributes:
       value: |
-        Fill in all sections. A story moves to `status:ready` only after the Architect approves the DoR checklist below.
+        Write the story, then submit. AI will review within minutes and comment.
+        Max 3 AI rounds — if unresolved, Lead Dev is notified automatically.
+
+  - type: input
+    id: requestor
+    attributes:
+      label: "Requestor (optional)"
+      description: "GitHub handle of the person who requested this feature, if different from the issue author."
+      placeholder: "@handle"
+    validations:
+      required: false
 
   - type: textarea
     id: description
     attributes:
       label: Description
-      description: User story — As a [role], I want [capability], so that [benefit].
+      description: "As a [role], I want [capability], so that [benefit]."
       placeholder: "As an operator, I want ... so that ..."
     validations:
       required: true
@@ -20,56 +30,39 @@ body:
   - type: textarea
     id: acceptance_criteria
     attributes:
-      label: Acceptance Criteria (DoD)
-      description: Numbered list of verifiable, testable conditions.
-      placeholder: "1. Given ... when ... then ...\n2. ..."
+      label: Acceptance Criteria
+      description: Verifiable conditions. Each AC must be testable — avoid vague language.
+      placeholder: |
+        - When X happens, Y is the result.
+        - Given Z state, the system does W.
     validations:
       required: true
 
   - type: textarea
-    id: modules
+    id: implications
     attributes:
-      label: Modules Involved
-      description: Which Aurora modules are touched? (Core, OCR, Translation, UI, Admin)
-      placeholder: "- Aurora.UI\n- Aurora.Core"
-    validations:
-      required: true
-
-  - type: textarea
-    id: adrs
-    attributes:
-      label: Relevant ADRs
-      description: List any ADRs that constrain or inform this story.
-      placeholder: "- ADR-002 (global hotkey)\n- ADR-003 (translation cascade)"
-    validations:
-      required: false
-
-  - type: textarea
-    id: isolation_constraints
-    attributes:
-      label: Isolation Constraints
-      description: Specific namespace or dependency rules that apply to this story.
-      placeholder: "- Aurora.UI must not reference Aurora.OCR directly\n- Use IOcrService via Core"
+      label: Implications
+      description: What other behaviors change? What does the operator experience differently?
+      placeholder: "- The overlay now dismisses automatically after 5 s\n- Settings panel shows a new field"
     validations:
       required: false
 
   - type: textarea
     id: test_cases
     attributes:
-      label: Expected Test Cases
-      description: Describe the test scenarios (unit, integration, architecture).
-      placeholder: "- Unit: ...\n- Integration: ...\n- Arch: ..."
+      label: Test Cases
+      description: Key scenarios to verify. Leave blank if ACs are self-evident.
+      placeholder: |
+        - (Unit) Given null input, returns empty string without throwing.
+        - (Integration) After file change, dictionary reloads within 1 s.
     validations:
       required: false
 
   - type: checkboxes
     id: dor
     attributes:
-      label: Definition of Ready (DoR)
-      description: All items must be checked before moving to `status:ready`.
+      label: Definition of Ready
       options:
-        - label: Description is written as a user story and is unambiguous
-        - label: Acceptance Criteria are testable and complete
-        - label: Modules and ADR references are listed
-        - label: No forbidden horizontal module dependencies are implied
-        - label: Architect has approved
+        - label: Description follows the "As a / I want / so that" format
+        - label: Every AC is testable — no "should feel" or "should be fast"
+        - label: No feature overlaps an existing US in specs/features/

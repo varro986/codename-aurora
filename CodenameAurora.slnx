@@ -9,21 +9,19 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests\Aurora.Tests.Architecture\Aurora.Tests.Architecture.csproj" />
+    <Project Path="tests\Aurora.Tests.Unit\Aurora.Tests.Unit.csproj" />
   </Folder>
   <Folder Name="/specs/">
     <File Path="specs\archi.md" />
     <Folder Name="/specs/adr/">
-      <File Path="specs\adr\0001-modular-monolith.md" />
-      <File Path="specs\adr\0002-global-hotkey.md" />
-      <File Path="specs\adr\0003-translation-cascade.md" />
-      <File Path="specs\adr\0004-local-translation-model.md" />
-      <File Path="specs\adr\0005-auto-update.md" />
-      <File Path="specs\adr\0006-admin-core-contract.md" />
-      <File Path="specs\adr\0007-composition-root.md" />
-      <File Path="specs\adr\0008-model-manager.md" />
+      <File Path="specs\adr\ADR-001-event-bus-mediatr.md" />
     </Folder>
     <Folder Name="/specs/features/">
-      <File Path="specs\features\US-001-app-settings.md" />
+      <File Path="specs\features\US-001-admin.md" />
+      <File Path="specs\features\US-002-ocr.md" />
+      <File Path="specs\features\US-003-translation.md" />
+      <File Path="specs\features\US-004-ui.md" />
+      <File Path="specs\features\US-005-core.md" />
     </Folder>
     <Folder Name="/specs/templates/">
       <File Path="specs\templates\adr_template.md" />
@@ -51,8 +49,12 @@
       <File Path=".github\workflows\ci.yml" />
       <File Path=".github\workflows\release.yml" />
       <File Path=".github\workflows\governance.yml" />
+      <File Path=".github\workflows\request-screening.yml" />
+      <File Path=".github\workflows\spec-review.yml" />
+      <File Path=".github\workflows\auto-ready.yml" />
       <File Path=".github\workflows\branch-from-issue.yml" />
       <File Path=".github\workflows\issue-lifecycle.yml" />
+      <File Path=".github\workflows\notify-requestor.yml" />
       <File Path=".github\workflows\lint.yml" />
       <File Path=".github\workflows\test-governance.yml" />
     </Folder>

@@ -1,0 +1,102 @@
+name: Request Screening
+
+# Triggered when a new issue receives status:request.
+# AI compares the request against existing user stories and archi.md,
+# identifies overlaps and conflicts, proposes a structured draft.
+# Single-shot: no round counting. BA then decides whether to formalize or reject.
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  screen:
+    if: |
+      github.event.label.name == 'status:request' &&
+      github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+
+      - name: AI cross-feature screening
+        id: ai
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          ARCHI=$(cat specs/archi.md)
+          US_FILES=$(cat specs/features/*.md 2>/dev/null || echo "(none yet)")
+
+          STATIC_PROMPT="You are screening a new feature request for the Codename Aurora project.
+
+          ## Architecture reference
+          ${ARCHI}
+
+          ## Existing user stories
+          ${US_FILES}
+
+          ## Task
+          1. OVERLAP CHECK: Does this request duplicate or partially overlap an existing user story? If yes, name it and explain the overlap.
+          2. CONFLICT CHECK: Does this request contradict the architecture (isolation rules, module assignments, MediatR contracts, IAppSettings fields)?
+          3. DRAFT: Propose a minimal structured user story draft using this exact format:
+             ## Scope
+             [1-2 lines]
+             ## Acceptance Criteria
+             - When X, Y happens.
+             ## Test Cases
+             - (Unit) ...
+
+          Start with one of: OVERLAP FOUND | CONFLICT FOUND | CLEAR
+          Then provide your analysis and the draft.
+          Be brief and direct. No preamble."
+
+          PAYLOAD=$(jq -n \
+            --arg model "claude-sonnet-5" \
+            --arg prompt "$STATIC_PROMPT" \
+            --arg title "$ISSUE_TITLE" \
+            --arg body "$ISSUE_BODY" \
+            '{model: $model, max_tokens: 1024, messages: [{role: "user", content: ($prompt + "\n\n## New request\nTitle: " + $title + "\n\n" + $body)}]}')
+
+          RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "$PAYLOAD")
+
+          CONTENT=$(echo "$RESPONSE" | jq -r '.content[0].text // "ERROR: could not parse API response"')
+          echo "result<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Post screening comment
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        env:
+          SCREENING_RESULT: ${{ steps.ai.outputs.result }}
+        with:
+          script: |
+            const result = process.env.SCREENING_RESULT;
+            const isConflict = result.startsWith('CONFLICT FOUND');
+            const isOverlap  = result.startsWith('OVERLAP FOUND');
+
+            const badge = isConflict ? '🔴 CONFLICT FOUND'
+                        : isOverlap  ? '🟡 OVERLAP FOUND'
+                        :              '🟢 CLEAR';
+
+            const footer = [
+              '---',
+              '_AI pre-screening complete. A BA must now:_',
+              '_- **Reject** the request (close this issue) if it is a duplicate or not viable._',
+              '_- **Accept** it by editing the issue with the proposed draft above, then applying `status:draft` to start spec review._',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `**AI Request Screening — ${badge}**\n\n${result}\n\n${footer}`
+            });

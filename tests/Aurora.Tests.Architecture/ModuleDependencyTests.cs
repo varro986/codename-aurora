@@ -63,7 +63,7 @@ public class ModuleDependencyTests
     [Fact, Trait("Category", "Architecture")]
     public void ModelManager_MustBeImplementedOnly_ByTranslationModule()
     {
-        // ADR-008: IModelManager is an Aurora.Core contract; only Aurora.Translation may implement it.
+        // archi.md §5 Model Manager: IModelManager is an Aurora.Core contract; only Aurora.Translation may implement it.
         var result = Types.InCurrentDomain()
             .That().ImplementInterface(typeof(Aurora.Core.Interfaces.IModelManager))
             .Should().ResideInNamespace(TranslationNamespace)

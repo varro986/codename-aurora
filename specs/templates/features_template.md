@@ -1,29 +1,19 @@
-# [US-XXX] User Story Title
+# US-NNN — [Module Name]
 
-* **Status:** [Draft / Ready / Active / Review]
-* **Author:** [Role]
-* **Created:** YYYY-MM-DD
+## Scope
+[1-2 lines: what this module does / what this story adds]
 
----
+## Acceptance Criteria
 
-## 1. Description
+**[Feature group A]**
+- When X happens, Y is the result.
+- Given Z state, the system does W.
 
-As a **[Role]**,  
-I want **[Feature / Action]**,  
-so that **[Benefit / Value delivered]**.
+**[Feature group B]**
+- ...
 
-## 2. Acceptance Criteria (DoD)
+*Module isolation: see `specs/archi.md` §4. DI wiring: see `specs/archi.md` §5 Composition Root.*
 
-* [ ] **AC-01:** [First measurable and verifiable criterion]
-* [ ] **AC-02:** [Second measurable and verifiable criterion]
-
-## 3. Architectural Guardrails
-
-* **Modules involved:** [`Core` / `OCR` / `Translation` / `UI` / `Admin`] — `Aurora.App` is the composition root only, never a business module
-* **Related ADRs:** [e.g. ADR-001]
-* **Isolation constraints:** [Any namespace or dependency rules that apply]
-
-## 4. Expected Test Cases
-
-* [ ] **Test 1:** [Description of required unit or integration test]
-* [ ] **Test 2:** [Description of regression/architecture test with NetArchTest]
+## Test Cases
+- (Unit) Given ..., result is ...
+- (Integration) After ..., system state is ...
