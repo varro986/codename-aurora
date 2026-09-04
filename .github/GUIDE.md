@@ -199,6 +199,10 @@ La modalità `--check` non modifica i file — esce con codice 1 se un file avre
 attenzione durante la code review che dovrebbe andare su logica e correttezza. CSharpier elimina
 completamente il dibattito: un formato, sempre. Se il tuo file non è formattato, la CI fallisce.
 
+**Nota:** i tool .NET globali vengono installati in `$HOME/.dotnet/tools`, che non è nel PATH di default
+su GitHub Actions. Lo step di installazione esporta esplicitamente il percorso in `$GITHUB_PATH` prima
+di invocare il formatter — omettere questo passaggio causa un "command not found" fuorviante.
+
 ---
 
 #### Job: `publish`
