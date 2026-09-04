@@ -1,0 +1,100 @@
+{
+  "_readme": "Smell rules enforced locally by .claude/hooks/smell-guard.sh (PostToolUse) and by CI via scripts/ci/agentic-smells.py. Same rules in both places — no divergence. Each rule requires both 'summary' (short label for CI output) and 'message' (detail). Add project-specific rules tagged with 'scope: project' in the section at the end.",
+  "rules": [
+    {
+      "id": "NO_WHAT_COMMENT",
+      "scope": "generic",
+      "summary": "Inline // comment may explain WHAT rather than WHY",
+      "added_regex": "^\\s+//[^/]",
+      "skip_line_regex": "^\\s*///",
+      "path_include": ["**/*.cs"],
+      "path_exclude": [],
+      "message": "Inline // comments must explain WHY (a non-obvious constraint, invariant, or workaround), never WHAT. English only, one line. If this comment restates what the code already makes obvious, remove it. XML doc (///) above public declarations is required and exempt from this rule."
+    },
+    {
+      "id": "NO_BLOCKING_ASYNC",
+      "scope": "generic",
+      "summary": "Blocking async call (.Result / .Wait() / .GetAwaiter().GetResult())",
+      "added_regex": "\\.Result\\b|\\.Wait\\(\\)|\\.GetAwaiter\\(\\)\\.GetResult\\(\\)",
+      "skip_line_regex": null,
+      "path_include": ["**/*.cs"],
+      "path_exclude": ["**/Program.cs"],
+      "message": "Blocking on async (.Result / .Wait() / .GetAwaiter().GetResult()) is forbidden. Use await end-to-end. Exception: top-level Program.cs where async host is unavailable — document the reason inline."
+    },
+    {
+      "id": "NO_ASYNC_VOID",
+      "scope": "generic",
+      "summary": "async void method added",
+      "added_regex": "\\basync\\s+void\\b",
+      "skip_line_regex": "EventHandler|EventArgs",
+      "path_include": ["**/*.cs"],
+      "path_exclude": [],
+      "message": "async void is forbidden. Return Task instead. Legitimate exception: event handlers (EventHandler / EventArgs signatures)."
+    },
+    {
+      "id": "NO_EMPTY_CATCH",
+      "scope": "generic",
+      "summary": "Empty catch block",
+      "added_regex": "catch\\s*(\\([^)]*\\))?\\s*\\{\\s*\\}",
+      "skip_line_regex": null,
+      "path_include": ["**/*.cs"],
+      "path_exclude": [],
+      "message": "Empty catch block silently swallows exceptions. Log, rethrow, or handle explicitly."
+    },
+    {
+      "id": "NO_HARDCODED_CONNECTION_STRING",
+      "scope": "generic",
+      "summary": "Hardcoded connection string or credential",
+      "added_regex": "(?i)(\"Server=|\"Data Source=|\"mongodb://|\"Host=.*;|password\\s*=\\s*\"[^\"]{3})",
+      "skip_line_regex": null,
+      "path_include": ["**/*.cs"],
+      "path_exclude": ["**/*Tests*.cs", "**/*Test*.cs"],
+      "message": "Hardcoded connection string or credential detected. Use IConfiguration, environment variables, or a secrets manager. See Security section in AGENTS.md."
+    },
+    {
+      "id": "NO_CONSOLE_WRITELINE",
+      "scope": "generic",
+      "summary": "Console.WriteLine outside presentation layer",
+      "added_regex": "\\bConsole\\.Write(Line)?\\(",
+      "skip_line_regex": null,
+      "path_include": ["**/*.cs"],
+      "path_exclude": [
+        "**/Program.cs",
+        "**/*Tests*.cs",
+        "**/*Test*.cs",
+        "**/Presentation/**"
+      ],
+      "message": "Console.WriteLine in non-presentation code. Use ILogger<T> for structured logging."
+    },
+    {
+      "id": "NO_NULLABLE_SUPPRESSION",
+      "scope": "generic",
+      "summary": "Null-forgiving operator (!) used",
+      "added_regex": "[a-zA-Z0-9_)\\]>]![.;,)\\s]",
+      "skip_line_regex": "!=|//|///",
+      "path_include": ["**/*.cs"],
+      "path_exclude": [],
+      "message": "Null-forgiving operator (!) detected. Use only when the compiler cannot infer non-nullability from context; add an XML doc comment above the member explaining why."
+    },
+    {
+      "id": "FORBIDDEN_COMMENT",
+      "scope": "generic",
+      "summary": "FIXME or STOPSHIP marker committed",
+      "added_regex": "\\b(FIXME|STOPSHIP):",
+      "skip_line_regex": null,
+      "path_include": ["**/*.cs", "**/*.feature"],
+      "path_exclude": [],
+      "message": "FIXME: and STOPSHIP: markers must not be committed. Resolve the issue or open a GitHub Issue to track it."
+    },
+    {
+      "id": "NO_DISPATCHER_INVOKE",
+      "scope": "generic",
+      "summary": "Dispatcher.Invoke blocks calling thread",
+      "added_regex": "\\.Dispatcher\\.Invoke\\(",
+      "skip_line_regex": null,
+      "path_include": ["**/*.cs"],
+      "path_exclude": ["**/*Tests*.cs", "**/*Test*.cs"],
+      "message": "Dispatcher.Invoke blocks the calling thread. Use Dispatcher.InvokeAsync or marshal via async/await instead."
+    }
+  ]
+}

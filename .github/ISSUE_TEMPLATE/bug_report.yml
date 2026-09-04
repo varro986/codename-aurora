@@ -1,0 +1,71 @@
+name: Bug Report
+description: Report a bug to help improve Aurora.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill every required section. The more context you provide, the faster the fix.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what went wrong.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Open Aurora with ...
+        2. Trigger hotkey / OCR / translation ...
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened. Include error messages or stack traces if available.
+    validations:
+      required: true
+
+  - type: input
+    id: aurora-version
+    attributes:
+      label: Aurora Version
+      placeholder: "e.g. 0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: Windows Version
+      placeholder: "e.g. Windows 11 22H2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Paste relevant log output or attach screenshots. Check `%APPDATA%\CodenameAurora\logs\` for log files.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Anything else relevant — display setup, active OCR/translation provider, etc.

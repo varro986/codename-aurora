@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CodenameAurora.Core\CodenameAurora.Core.csproj" />
+    <ProjectReference Include="..\CodenameAurora.OCR\CodenameAurora.OCR.csproj" />
+    <ProjectReference Include="..\CodenameAurora.Translation\CodenameAurora.Translation.csproj" />
+    <ProjectReference Include="..\CodenameAurora.UI\CodenameAurora.UI.csproj" />
+    <ProjectReference Include="..\CodenameAurora.Admin\CodenameAurora.Admin.csproj" />
+  </ItemGroup>
+</Project>

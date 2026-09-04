@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project specs and architecture
+    url: https://github.com/varro986/codename-aurora/tree/main/specs
+    about: User stories, ADRs, and architecture docs live here.

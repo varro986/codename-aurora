@@ -1,0 +1,99 @@
+name: Bootstrap Feature
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  bootstrap:
+    if: github.event.label.name == 'status: active'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute branch name
+        id: vars
+        run: |
+          N="${{ github.event.issue.number }}"
+          SLUG=$(echo "${{ github.event.issue.title }}" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9]/-/g; s/-\+/-/g; s/^-\|-$//g' \
+            | cut -c1-50)
+          echo "branch=feature/issue-${N}-${SLUG}" >> "$GITHUB_OUTPUT"
+          echo "n=$N" >> "$GITHUB_OUTPUT"
+
+      - name: Create branch (idempotent)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH="${{ steps.vars.outputs.branch }}"
+          if git ls-remote --exit-code --heads origin "$BRANCH" &>/dev/null; then
+            echo "Branch $BRANCH already exists — skipping creation."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            git checkout -b "$BRANCH"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+        id: branch
+
+      - name: Write test stub
+        if: steps.branch.outputs.skip == 'false'
+        run: |
+          N="${{ steps.vars.outputs.n }}"
+          TEST_DIR="tests/CodenameAurora.Tests.Unit"
+          mkdir -p "$TEST_DIR"
+          cat > "$TEST_DIR/Issue${N}Tests.cs" <<EOF
+#nullable enable
+using Xunit;
+
+namespace CodenameAurora.Tests.Unit;
+
+public sealed class Issue${N}Tests
+{
+    [Fact(Skip = "Stub — remove Skip and implement against Issue #${N} acceptance criteria")]
+    [Trait("US", "US-${N}")]
+    public void Scenario_Name_Here()
+    {
+        // Arrange
+
+        // Act
+
+        // Assert
+        throw new NotImplementedException();
+    }
+}
+EOF
+
+      - name: Commit and push
+        if: steps.branch.outputs.skip == 'false'
+        run: |
+          N="${{ steps.vars.outputs.n }}"
+          git add "tests/CodenameAurora.Tests.Unit/Issue${N}Tests.cs"
+          git commit -m "bootstrap: add test stub for Issue #${N}"
+          git push origin "${{ steps.vars.outputs.branch }}"
+
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = '${{ steps.vars.outputs.branch }}';
+            const n = '${{ steps.vars.outputs.n }}';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                `Branch \`${branch}\` created with test stub at \`tests/CodenameAurora.Tests.Unit/Issue${n}Tests.cs\`.`,
+                '',
+                'Checkout with:',
+                '```',
+                `git fetch --all && git checkout ${branch}`,
+                '```',
+                '',
+                'Remove the `Skip` attribute and implement against the acceptance criteria before writing production code.',
+              ].join('\n')
+            });

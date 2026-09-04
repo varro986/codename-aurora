@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "skip_token": "SKIP_COUPLING_CHECK",
+  "note": "Machine-readable coupling axes for the git-commit hook and CI sweep. Each axis carries its own checklist so a report is actionable. Rules fire on ADDED diff content in production sources only — tests/ is exempt.",
+  "axes": [
+    {
+      "id": "horizontal-module-reference",
+      "label": "HORIZONTAL MODULE REFERENCE",
+      "routing": "autonomous-eligible",
+      "rules": [
+        {
+          "id": "csproj-project-reference",
+          "severity": "block",
+          "when": {
+            "path_glob": "src/**/*.csproj",
+            "added_regex": "<ProjectReference"
+          },
+          "checklist": [
+            "The reference target is `CodenameAurora.Core` (the only permitted inward dependency for operational modules)",
+            "OR the file is `CodenameAurora.App` (the composition root — the only project allowed to reference all modules)",
+            "No sibling operational module is referenced directly — cross-module communication goes through the core interfaces",
+            "If a new module is added, an architecture test covers it (Category=Architecture)"
+          ],
+          "message": "ProjectReference added to a .csproj. Verify it only points to the core/contracts project (or that the file is the composition root). No horizontal references between sibling modules."
+        }
+      ]
+    },
+    {
+      "id": "core-interface-change",
+      "label": "CORE / CONTRACTS INTERFACE",
+      "routing": "autonomous-eligible",
+      "rules": [
+        {
+          "id": "interface-signature-change",
+          "severity": "warn",
+          "when": {
+            "path_glob": "src/**/*.Core/**/*.cs",
+            "added_regex": "\\binterface\\b|\\bTask\\b|\\bValueTask\\b"
+          },
+          "checklist": [
+            "All implementors updated (grep the interface name across src/)",
+            "All call sites still compile (dotnet build --configuration Release)",
+            "Architecture tests still pass (dotnet test --filter Category=Architecture)",
+            "ADR created or updated in specs/adr/ if this is a structural decision"
+          ],
+          "message": "Core/contracts interface touched. A changed interface signature is a cross-module contract change — verify all implementors and call sites."
+        }
+      ]
+    }
+  ]
+}

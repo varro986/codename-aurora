@@ -1,0 +1,61 @@
+name: Feature / User Story
+description: Propose a new feature (Phase A — Gatekeeper).
+labels: ["status: draft"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill every required section. A complete issue unlocks the bootstrap workflow (Phase B) — the Action creates the feature branch and test stub when `status: active` is applied.
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: "As a [role], I want [capability], so that [benefit]."
+      placeholder: "As a user, I want ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: "Gherkin-style — one scenario per criterion. These become the Reqnroll .feature file."
+      placeholder: |
+        Scenario: ...
+          Given ...
+          When ...
+          Then ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: csharp-constraints
+    attributes:
+      label: C# / .NET Constraints
+      description: "Layer placement, interfaces, async requirements, or packages this feature must respect."
+      placeholder: "e.g. Implement in Application layer, expose via IOcrService, async end-to-end."
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - core
+        - ocr
+        - translation
+        - ui
+        - admin
+        - infra
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: gatekeeper
+    attributes:
+      label: Gatekeeper checklist
+      description: Check before applying `status: active`.
+      options:
+        - label: User story is complete (role, capability, benefit)
+        - label: At least one acceptance criterion in Gherkin form
+        - label: Layer and interface constraints stated (or "no special constraints")

@@ -1,0 +1,9 @@
+# Default owner for everything not matched below
+*   @varro986
+
+# [PROJECT-SPECIFIC] add per-module owners as the team grows
+# src/CodenameAurora.Core/          @
+# src/CodenameAurora.Admin/         @
+# src/CodenameAurora.App/           @
+# .github/                          @varro986
+# specs/                            @varro986
