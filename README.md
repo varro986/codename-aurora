@@ -1,61 +1,60 @@
-[![CI](https://github.com/varro986/codename-aurora/actions/workflows/ci.yml/badge.svg)](https://github.com/varro986/codename-aurora/actions/workflows/ci.yml)
-[![Latest Release](https://img.shields.io/github/v/release/varro986/codename-aurora)](https://github.com/varro986/codename-aurora/releases/latest)
-[![.NET](https://img.shields.io/badge/.NET-8%2B-512BD4)](https://dotnet.microsoft.com)
-[![Platform](https://img.shields.io/badge/Windows%2011%2B-0078D4?logo=windows)](https://www.microsoft.com/windows)
+# Aurora
 
-# Codename Aurora
-
-**Windows desktop overlay for real-time OCR and translation.**
-
-Capture any region of your screen, extract text with the native Windows OCR engine, and get an instant translation — all triggered by a global hotkey, without leaving your current window.
+A Windows desktop overlay for real-time OCR and translation of whatever is on screen.
 
 ## Goal
 
 Remove the language barrier from whatever is on screen: read text in a language you do not know, in any application,
 without copying it anywhere.
 
-## How it works
+## Description
 
-1. Press the configured hotkey from any application.
-2. Aurora captures the screen region and runs OCR via the native Windows engine (no API key required).
-3. Text is translated using a local dictionary cascade (private → generic → verbatim).
-4. The result appears in a transparent, always-on-top overlay. Click-through — it never interrupts your workflow.
+Press a global hotkey from any application: Aurora captures a region of the screen, extracts the text with the native
+Windows OCR engine (no API key), translates it with a local dictionary cascade (private, then generic, then verbatim)
+and shows the result in a transparent, always-on-top, click-through overlay that never interrupts the work. It lives
+in the system tray, with no main window.
 
-## Requirements
+The project restarted from this README: specs and code are being rebuilt from scratch.
 
-- Windows 11 (Build 22621+)
-- .NET 8 runtime
+## Technologies
 
-## Quick start
+- C# on .NET 8, Windows 11 (build 22621+).
+- **Windows only, on purpose**: the OCR is the native Windows engine, which is free, offline and needs no key; the
+  exception to "portable across Windows and Linux" is written here as the common rules require.
 
-1. Download the latest release from [GitHub Releases](https://github.com/varro986/codename-aurora/releases/latest).
-2. Run `CodenameAurora.App.exe`.
-3. Aurora starts in the system tray — no main window.
-4. Press your configured hotkey to capture and translate.
+## Dependencies
 
-## Project structure
+| From | What it uses | Type |
+|---|---|---|
+| Windows 11 | native OCR engine, global hotkeys, overlay windows | platform |
+
+Nothing depends on Aurora.
+
+## Architecture
 
 ```
-specs/               ← source of truth: architecture, features, ADRs
-  architecture/      ← C# contracts, modules, isolation rules
-  features/          ← MVP and incremental user stories
-  templates/         ← ADR and US templates
-.claude/             ← Claude Code configuration (skills, hooks, settings)
-.github/             ← CI, issue templates, label setup, workflows
-scripts/             ← code quality rules (smell-guard, coupling-guard)
-src/                 ← source code (created during development phase)
-tests/               ← unit, architecture, Gherkin tests (created during development)
+codename-aurora/
+|-- README.md         what the project is
+|-- AGENTS.md         rules for coding assistants: common rules, then the product's own
+|-- CLAUDE.md         shell for Claude Code (@AGENTS.md)
+|-- CONTRIBUTING.md   how to contribute (specs first, GitHub Flow)
+|-- LICENSE           MIT
+|-- specs/            ideas and open questions; requirements, features and decisions as they come
+|-- .githooks/        pre-commit: gitleaks on staged files
+|-- .github/          CI: gitleaks on push and pull request
+|-- .gitleaks.toml    secret scan rules
+\-- .gitignore
 ```
 
-→ Workflow, quality gates, and process rules: [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+## Rules
 
-## Contributing
+- **Local only**: OCR and translation run on the machine; no text leaves it.
+- **Never in the way**: the overlay is click-through and never takes the focus.
 
-Aurora is developed spec-first. See [AGENTS.md](AGENTS.md) for architecture laws, AI assistance policy, and PR process.
+## Miscellaneous
 
-- [Report a bug](https://github.com/varro986/codename-aurora/issues/new?template=bug_report.yml)
-- [Request a feature](https://github.com/varro986/codename-aurora/issues/new?template=feature.yml)
+Nothing yet.
 
-## License
+## To do
 
-MIT
+- Write `specs/vision.md` and the first feature (capture, OCR, overlay), then the stack ADR (.NET version, UI framework).
