@@ -23,8 +23,10 @@ exception next to the rule it breaks, with the reason.
 
 ### Safety and operations
 
-- Agents commit and push only when the person driving the session asks; never skip hooks (`--no-verify`); never run
-  destructive commands (`rm -rf`, `reset --hard`, `push --force`, recursive deletions).
+- `main` is protected, for everyone: every change goes through a branch and a pull request, merged only with CI green
+  and linear history.
+- Agents commit, push and merge only when the person driving the session asks; never skip hooks (`--no-verify`); never
+  run destructive commands (`rm -rf`, `reset --hard`, `push --force`, recursive deletions).
 - Secrets never in the repo, in logs or in messages; gitleaks in pre-commit and in CI. Where a secrets file is needed,
   a `.example` with the same names and no values sits next to it, kept aligned by a test.
 - Before every change: can it destroy, replace or overwrite files? Can it touch data that is not its own? If so, stop
@@ -66,19 +68,32 @@ stays short and points to `specs/`.
 The product is built from its specs, following the GitHub Spec Kit model: constitution (`AGENTS.md`), spec, plan,
 tasks, implementation.
 
+The layout below is the required skeleton of every product; entries marked `(when needed)` and names with `NNN` are
+added as the work requires them.
+
 ```
-|-- README.md, AGENTS.md, CLAUDE.md, CONTRIBUTING.md, LICENSE
-|-- .gitignore, .gitleaks.toml, .githooks/, .github/ (CI, issue and PR templates)
-|-- .claude/agents/    executor.md, reviewer.md, microtask.md: model and tools only, rules stay here
+|-- README.md, AGENTS.md, CLAUDE.md, CONTRIBUTING.md, LICENSE, SECURITY.md, CODE_OF_CONDUCT.md
+|-- .gitignore, .gitleaks.toml, .editorconfig
+|-- .githooks/
+|   \-- pre-commit               gitleaks on staged files
+|-- .github/
+|   |-- workflows/               CI: gitleaks, then build and tests
+|   |-- ISSUE_TEMPLATE/          bug report and idea forms
+|   |-- pull_request_template.md
+|   \-- dependabot.yml           updates of dependencies and GitHub Actions
+|-- .claude/agents/              executor.md, reviewer.md, microtask.md: model and tools only (when needed)
 |-- specs/
-|   |-- vision.md, ideas.md, questions.md, glossary.md
-|   |-- requirements.md          REQ-F / REQ-NF (ISO 25010)
-|   |-- architecture.md          reduced arc42 + C4
-|   |-- decisions/NNNN-*.md      ADRs (Nygard), never edited: a changed decision is a new ADR
-|   \-- features/NNN-name/       one folder per feature: the unit of work
-|       |-- spec.md              stories and Given/When/Then criteria (what)
-|       |-- plan.md              how: components, contracts and interfaces it touches, risks
-|       \-- tasks.md             tasks: id, files touched, depends on, role, "done when"
+|   |-- ideas.md, questions.md
+|   |-- vision.md, glossary.md   (when needed)
+|   |-- requirements.md          REQ-F / REQ-NF, ISO 25010 (when needed)
+|   |-- architecture.md          reduced arc42 + C4 (when needed)
+|   |-- decisions/               ADRs (Nygard), never edited: a changed decision is a new ADR
+|   |   \-- NNNN-title.md
+|   \-- features/                one folder per feature: the unit of work
+|       \-- NNN-name/
+|           |-- spec.md          stories and Given/When/Then criteria (what)
+|           |-- plan.md          how: components, contracts and interfaces it touches, risks
+|           \-- tasks.md         tasks: id, files touched, depends on, role, "done when"
 |-- src/
 \-- tests/
 ```

@@ -1,0 +1,11 @@
+name: Idea
+description: A proposal; it becomes a requirement only when accepted
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What problem it solves and for whom.
+    validations:
+      required: true

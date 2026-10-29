@@ -39,15 +39,18 @@ codename-aurora/
 |-- CLAUDE.md         shell for Claude Code (@AGENTS.md)
 |-- CONTRIBUTING.md   how to contribute (specs first, GitHub Flow)
 |-- LICENSE           MIT
+|-- SECURITY.md       how to report a vulnerability
+|-- CODE_OF_CONDUCT.md
 |-- specs/            ideas.md, questions.md; requirements, architecture and the rest as they come
 |   |-- features/     one folder per feature: spec.md, plan.md, tasks.md
 |   \-- decisions/    ADRs
 |-- src/              source code
 |-- tests/            tests, from the acceptance criteria
 |-- .githooks/        pre-commit: gitleaks on staged files
-|-- .github/          CI: gitleaks on push and pull request
+|-- .github/          CI (gitleaks), issue and PR templates, Dependabot
 |-- .gitleaks.toml    secret scan rules
-\-- .gitignore
+|-- .gitignore
+\-- .editorconfig     shared editor settings
 ```
 
 ## Rules
