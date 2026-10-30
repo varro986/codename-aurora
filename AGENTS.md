@@ -43,7 +43,8 @@ exception next to the rule it breaks, with the reason. Rules of a single project
 
 ### Code
 
-- **Values in one place**: no numbers, times, paths or thresholds hard-coded; configuration holds them.
+- **Values in one place**: no numbers, times, paths or thresholds hard-coded; configuration holds them. A path or value
+  that differs from one machine to another comes from an environment variable, with its default in configuration.
 - **Clean and lean**: remove what is not needed (files, keys, sections), no dead code, no useless work (repeated reads,
   calls or queries, scans where a map is enough, queries without a time filter); the simplest form that does the job,
   no abstraction for a single use. Comments useful but minimal: only the non-obvious why, constraints, edge cases;
@@ -68,6 +69,16 @@ exception next to the rule it breaks, with the reason. Rules of a single project
   before touching another project; changes that span projects are declared as such.
 - **Related projects**: every link (one uses, hosts or reuses another) is in the Dependencies table of the README, on
   both sides.
+
+### Brainstorming
+
+Every project has one `brainstorming.md`: where ideas and doubts land before anything is decided. Two sections:
+
+- **Ideas**: a table `Id | Date | Idea | Status`, one idea per row (`IDEA-n`, the date of origin, status proposed,
+  accepted or rejected). An idea becomes work only with the owner's yes; it is never deleted, only its status changes.
+- **Open questions**: doubts and contradictions to settle before deciding, one per line, with their date of origin.
+
+What reaches it is already clean: no personal data, customer data or employer data, whatever the repository.
 
 ### Best of breed
 
@@ -118,6 +129,11 @@ Roles are by model tier, so they hold with any assistant; the "today" column is 
 | Microtask | Haiku 5.5 | searches, test stubs from the criteria, renames, mechanical checks | decisions |
 | Reviewer | Sonnet 5.5, fresh agent | reads the diff with fresh eyes, runs the tests, checks the criteria | fixing things itself |
 
+- **Deterministic work goes into tools, not into reasoning**: whatever is done the same way every time (checks,
+  scaffolding, counting, formatting, syncing) becomes a script, which costs no tokens and always gives the same
+  result; agents run the tools, read their results and keep for themselves only what needs judgment. When an agent
+  does the same deterministic job by hand twice, the next step is a tool. A project keeps its tools together in
+  `tools/`, each with its usage written at the top, so any agent finds them in the same place.
 - Only what touches different files runs in parallel: never two agents on the same file, never two on the same task.
 - A new agent's prompt says everything (files to read, boundaries, what to report): it does not see the conversation.
 - Every agent reports files changed, tests written or run and doubts; never "done" without saying what was verified.
@@ -162,7 +178,7 @@ are added as the work requires them.
 |   \-- dependabot.yml           updates of dependencies and GitHub Actions
 |-- .claude/agents/              executor.md, reviewer.md, microtask.md: model and tools only (when needed)
 |-- specs/
-|   |-- ideas.md, questions.md
+|   |-- brainstorming.md
 |   |-- vision.md, glossary.md   (when needed)
 |   |-- requirements.md          REQ-F / REQ-NF, ISO 25010 (when needed)
 |   |-- architecture.md          reduced arc42 + C4 (when needed)
@@ -174,12 +190,12 @@ are added as the work requires them.
 |           |-- plan.md          how: components, contracts and interfaces it touches, risks
 |           \-- tasks.md         tasks: id, files touched, depends on, role, "done when"
 |-- src/
-\-- tests/
+|-- tests/
+\-- tools/                       deterministic tools for agents and people (common rules, "Working with agents")
 ```
 
-- `ideas.md` is the inbox (`IDEA-n`, date of origin, status: proposed, accepted, rejected) while only the owner works
-  on the product; with contributors, GitHub Issues take its place. `questions.md` holds open questions and
-  contradictions. Both are filled from the owner's voice notes, already cleaned of anything private.
+- `specs/brainstorming.md` is the product's brainstorming (common rules, "Brainstorming") while only the owner works
+  on the product; with contributors, GitHub Issues take the place of its ideas.
 - An idea becomes a requirement only with the owner's yes. Traceability: an accepted idea becomes a REQ, the REQ cites
   the features and ADRs that implement it; "done when" points to the Given/When/Then criteria, so it is a passing test.
 - A file is added when it is needed, not before. The README stays short and points to `specs/`.
