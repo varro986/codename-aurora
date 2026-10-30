@@ -5,71 +5,150 @@ Rules for any coding assistant working on this repository. `CLAUDE.md` only impo
 <!-- BEGIN common rules: maintained centrally and copied identical into every product; do not edit here -->
 ## Common rules
 
-These rules are the same in every product of this family. A product that does something differently writes the
-exception next to the rule it breaks, with the reason.
+The same in every repository of this family, private or public. A project that does something differently writes the
+exception next to the rule it breaks, with the reason. Rules of a single project live in its README, "Rules".
+
+### Goal
+
+- **The perfect system**: every part does one thing, well, the same way as the others; nothing superfluous, nothing
+  incoherent, nothing untested. When in doubt between two paths, take the one that gets closer to this.
+- **Desired state and idempotence**: the wanted state lives in git and the code brings the system there; every step,
+  repeated, does nothing; on an aligned system the dry run proposes no action.
 
 ### Single neutral source
 
-- Rules live in plain text: `AGENTS.md` for the repo. `CLAUDE.md`, `GEMINI.md` and similar files only import it;
-  skills, agents, commands and hooks of a tool never add rules of their own.
+- Rules live in plain text: `AGENTS.md` for a repository, the README for a project. `CLAUDE.md`, `GEMINI.md` and
+  similar files only import them; skills, agents, commands and hooks of a tool never add rules of their own.
 - Whatever must always hold (secrets, style, tests) also runs without AI, in pre-commit and in CI, with the same rules
   as the local hooks.
-- Nothing useful lives only in a tool's memory: it goes into the repo.
+- Nothing useful lives only in a tool's memory: it goes into the repository.
 
 ### Language
 
-- English for everything that is code or documentation: identifiers, keys, file and folder names, commit messages,
-  README, specs.
+- English for identifiers, keys, file and folder names and commit messages. Documentation, comments and logs follow
+  the repository: see its own rules.
 
 ### Safety and operations
 
-- `main` is protected, for everyone: every change goes through a branch and a pull request, merged only with CI green
-  and linear history.
+- Before every change: can it destroy, replace or overwrite files? Can it touch data that is not its own? If so, stop
+  and ask. Every write, move or delete has an explicit path, condition and protection (write only if different, copy
+  first, atomic, never outside the expected folders).
 - Agents commit, push and merge only when the person driving the session asks; never skip hooks (`--no-verify`); never
   run destructive commands (`rm -rf`, `reset --hard`, `push --force`, recursive deletions).
-- Secrets never in the repo, in logs or in messages; gitleaks in pre-commit and in CI. Where a secrets file is needed,
-  a `.example` with the same names and no values sits next to it, kept aligned by a test.
-- Before every change: can it destroy, replace or overwrite files? Can it touch data that is not its own? If so, stop
-  and ask.
-- No personal data, customer data or employer data anywhere in the repo, not even in notes or test fixtures.
+- Secrets never in the repository, in logs, results, reports or visible process arguments; only their names in the
+  code. gitleaks in pre-commit and in CI. Where a secrets file is needed, a `.example` with the same names and no
+  values sits next to it, kept aligned by a test.
+- Least privilege everywhere: every account, service or command has only the permissions it needs (one database and
+  account per project, read-only where enough).
 
 ### Code
 
-- Clean and testable (pure logic, I/O at the edges), reuse what exists, every value in one place, idempotent
-  operations; scripts and hooks in PowerShell 7 (pwsh), the same on Windows and Linux.
-- No absolute paths of a machine in scripts (relative to the script or from `$HOME`), no Windows-only commands without
-  the alternative next to them.
+- **Values in one place**: no numbers, times, paths or thresholds hard-coded; configuration holds them.
+- **Clean and lean**: remove what is not needed (files, keys, sections), no dead code, no useless work (repeated reads,
+  calls or queries, scans where a map is enough, queries without a time filter); the simplest form that does the job,
+  no abstraction for a single use. Comments useful but minimal: only the non-obvious why, constraints, edge cases;
+  never history dates.
+- **Testable**: logic in small pure functions, I/O at the edges; a test for every important behaviour (writes,
+  idempotence, secrets) and for every fixed bug. Formats exchanged between projects have an example tested by both the
+  writer and the reader.
+- **Design patterns where they help** (layers, adapters, configuration-driven behaviour), without over-engineering.
+- **Reuse**: use what already exists; duplicated code goes to a common place.
+- **PowerShell 7 (pwsh) everywhere**, the same on Windows and Linux; the only exception is a Windows first-run script,
+  compatible with Windows PowerShell 5.1, which installs pwsh and stops. No absolute machine paths in scripts (relative
+  to the script or from `$HOME`), no Windows-only commands without the alternative next to them.
 - No new feature without the owner's yes: ideas are proposals.
+
+### Coherence
+
+- **One system**: projects are parts of one coherent whole; the same thing is done the same way everywhere (dry run
+  and apply, results and logs, messages that say what to do, names, README structure). A new solution in one project
+  holds for all of them, or the reason why not is written.
+- **In the same change**: every code change updates README, configuration and tests together.
+- **One project per session**: a session declares at the start which project it works on, stays in its folder and asks
+  before touching another project; changes that span projects are declared as such.
+- **Related projects**: every link (one uses, hosts or reuses another) is in the Dependencies table of the README, on
+  both sides.
 
 ### Best of breed
 
 - For every need, the standard or tool recognised as the best in its category, not an invented format: decisions as
   ADRs, architecture with arc42 and C4, quality with ISO 25010, acceptance criteria as Given/When/Then. Used in the
-  reduced form the product needs, not in full.
+  reduced form the project needs, not in full.
 - An exception (an own format, a less common tool) only with its reason written next to it; when the reason no longer
   holds, switch to the standard.
 
 ### Technologies
 
-- The README declares the technologies used (languages, runtimes, services and main versions) in "Technologies".
-- Preferred: C#, bash and PowerShell 7. Anything else only when needed, with the reason written in "Technologies".
+- The README declares the technologies used (languages, runtimes, services and main versions).
+- Preferred: C#, bash and PowerShell 7. Anything else only when needed, with the reason written in the README.
 - Dependencies, tools and languages: open source under MIT or Apache 2.0, portable across Windows and Linux; another
-  licence, or something that runs on one system only, only with the reason written in "Technologies".
+  licence, or something that runs on one system only, only with the reason written in the README.
 
 ### README
 
-Sections with these names and in this order; a section that is not needed is omitted, never renamed: Goal,
-Description, Technologies, Dependencies (table `From | What it uses | Type`, both directions), Architecture, Rules,
-Installation, Usage, product sections, Contributing, Tests, Agents, Miscellaneous (always present), To do. The README
-stays short and points to `specs/`.
+Sections with these names and in this order; a section that is not needed is omitted, never renamed. The first five
+say what the project is, the others how to work on it; the project's own sections go between Usage and Contributing.
+
+1. `# <Name>` and one line: what it is.
+2. Goal: why it exists, what problem it solves, for whom (1-3 lines).
+3. Description: what it does and where it runs, in a few lines.
+4. Technologies: languages, runtimes, services, main versions; for anything not C#, bash or PowerShell, the reason.
+5. Dependencies: table `From | What it uses | Type` (project, library, service, machine), or "None"; also who depends
+   on this project.
+6. Architecture: the folder tree (code block, one line per entry), components and flows; a mermaid diagram only if
+   needed.
+7. Rules: the project's own.
+8. Installation (only if something is installed). 9. Usage (only if it is run). 10. The project's own sections.
+11. Contributing: change, test, ship (only if there is code). 12. Tests: exact commands and what they cover.
+13. Agents: what can run in parallel and who does it, contracts not to touch, the orchestrator's checks, what stays
+    with the owner. 14. Miscellaneous: always present ("Nothing yet." is fine). 15. To do (only if needed).
+
+A repository documented in Italian uses the same sections with Italian titles (Obiettivo, Descrizione, Tecnologie,
+Dipendenze, Architettura, Regole del progetto, Installazione, Uso, Come intervenire, Prove, Agenti, Miscellanea, Da
+fare).
+
+### Working with agents
+
+Roles are by model tier, so they hold with any assistant; the "today" column is the current choice.
+
+| Role | Today (Claude) | Does | Does not |
+|---|---|---|---|
+| Orchestrator | Opus 5.5, high effort (max for architecture) | plan, contracts and interfaces (first, in series), decisions, wiring, build, tests, commits | mechanical work it can delegate |
+| Executor | Sonnet 5.5 | one task at a time, in an isolated worktree, in parallel with the others; touches only its files | build, commits, contract changes |
+| Microtask | Haiku 5.5 | searches, test stubs from the criteria, renames, mechanical checks | decisions |
+| Reviewer | Sonnet 5.5, fresh agent | reads the diff with fresh eyes, runs the tests, checks the criteria | fixing things itself |
+
+- Only what touches different files runs in parallel: never two agents on the same file, never two on the same task.
+- A new agent's prompt says everything (files to read, boundaries, what to report): it does not see the conversation.
+- Every agent reports files changed, tests written or run and doubts; never "done" without saying what was verified.
+- Small jobs are done, not delegated. Real data and production: the agent prepares, the owner approves and ships.
+<!-- END common rules -->
+
+<!-- BEGIN product rules: maintained centrally and copied identical into every product; do not edit here -->
+## Product rules
+
+What holds for every product, on top of the common rules.
+
+### A product
+
+- A public repository with its own philosophy, meant for more people: issues, pull requests, contributors.
+- **Self-sufficient**: whoever opens it sees only the repository, so everything needed to work on it (architecture,
+  decisions, rules) is in it. No personal data, customer data or employer data anywhere, not even in notes or test
+  fixtures.
+- Documentation, comments and logs in English.
+
+### Workflow
+
+- `main` is protected, for everyone: every change goes through a branch and a pull request, merged only with CI green
+  and linear history.
+- MIT licence. Community files: `SECURITY.md` (private vulnerability reporting), `CODE_OF_CONDUCT.md` (Contributor
+  Covenant 2.1), issue forms, pull request template, Dependabot.
 
 ### Spec driven development
 
 The product is built from its specs, following the GitHub Spec Kit model: constitution (`AGENTS.md`), spec, plan,
-tasks, implementation.
-
-The layout below is the required skeleton of every product; entries marked `(when needed)` and names with `NNN` are
-added as the work requires them.
+tasks, implementation. The layout below is the required skeleton; entries marked `(when needed)` and names with `NNN`
+are added as the work requires them.
 
 ```
 |-- README.md, AGENTS.md, CLAUDE.md, CONTRIBUTING.md, LICENSE, SECURITY.md, CODE_OF_CONDUCT.md
@@ -100,31 +179,18 @@ added as the work requires them.
 
 - `ideas.md` is the inbox (`IDEA-n`, date of origin, status: proposed, accepted, rejected) while only the owner works
   on the product; with contributors, GitHub Issues take its place. `questions.md` holds open questions and
-  contradictions.
+  contradictions. Both are filled from the owner's voice notes, already cleaned of anything private.
 - An idea becomes a requirement only with the owner's yes. Traceability: an accepted idea becomes a REQ, the REQ cites
   the features and ADRs that implement it; "done when" points to the Given/When/Then criteria, so it is a passing test.
-- A file is added when it is needed, not before.
+- A file is added when it is needed, not before. The README stays short and points to `specs/`.
 
-### Working with agents
-
-Roles are by model tier, so they hold with any assistant; the "today" column is the current choice.
-
-| Role | Today (Claude) | Does | Does not |
-|---|---|---|---|
-| Orchestrator | Opus 5.5, high effort (max for architecture) | plan, contracts and interfaces (first, in series), decisions, wiring, build, tests, commits | mechanical work it can delegate |
-| Executor | Sonnet 5.5 | one task at a time, in an isolated worktree, in parallel with the others; touches only its files | build, commits, contract changes |
-| Microtask | Haiku 5.5 | searches, test stubs from the criteria, renames, mechanical checks | decisions |
-| Reviewer | Sonnet 5.5, fresh agent | reads the diff with fresh eyes, runs the tests, checks the criteria | fixing things itself |
+### Parallel work from tasks.md
 
 - Tasks are written to be parallel: each declares the files it touches and what it depends on. Two tasks with no
-  shared files and no open dependencies run together, one executor each; never two agents on the same file.
+  shared files and no open dependencies run together, one executor each in its own worktree.
 - Contracts and interfaces from `plan.md` come first, written by the orchestrator in series; no executor changes them.
 - The reviewer checks the diff against the criteria in `spec.md`.
-- A new agent's prompt says everything (files to read, boundaries, what to report): it does not see the conversation.
-  Every agent reports files changed, tests written or run and doubts; never "done" without saying what was verified.
-- Small jobs are done, not delegated; never two agents on the same task. Real data and production: the agent prepares,
-  the owner approves and ships.
-<!-- END common rules -->
+<!-- END product rules -->
 
 ## Aurora rules
 
