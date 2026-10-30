@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Aurora.App/Aurora.App.csproj" />
+    <Project Path="src/Aurora.Core/Aurora.Core.csproj" />
+    <Project Path="src/Aurora.Overlay/Aurora.Overlay.csproj" />
+    <Project Path="src/Aurora.Windows/Aurora.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Aurora.Core.Tests/Aurora.Core.Tests.csproj" />
+    <Project Path="tests/Aurora.EndToEnd.Tests/Aurora.EndToEnd.Tests.csproj" />
+    <Project Path="tests/Aurora.Windows.Tests/Aurora.Windows.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/targets/">
+    <Project Path="tests/targets/Aurora.Targets.Console/Aurora.Targets.Console.csproj" />
+    <Project Path="tests/targets/Aurora.Targets.Desktop/Aurora.Targets.Desktop.csproj" />
+  </Folder>
+</Solution>
