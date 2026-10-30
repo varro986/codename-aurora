@@ -49,6 +49,9 @@ exception next to the rule it breaks, with the reason. Rules of a single project
   calls or queries, scans where a map is enough, queries without a time filter); the simplest form that does the job,
   no abstraction for a single use. Comments useful but minimal: only the non-obvious why, constraints, edge cases;
   never history dates.
+- **Tested locally first**: every project has a `cicd/` folder with its deterministic checks (tests, syntax, alignment
+  with configuration), run on the machine before every push by one shared runner; the remote CI repeats the same steps
+  and stays minimal (secrets scan on every push, the rest only when needed), so it never drifts from the local one.
 - **Testable**: logic in small pure functions, I/O at the edges; a test for every important behaviour (writes,
   idempotence, secrets) and for every fixed bug. Formats exchanged between projects have an example tested by both the
   writer and the reader.
@@ -189,6 +192,7 @@ are added as the work requires them.
 |           |-- spec.md          stories and Given/When/Then criteria (what)
 |           |-- plan.md          how: components, contracts and interfaces it touches, risks
 |           \-- tasks.md         tasks: id, files touched, depends on, role, "done when"
+|-- cicd/                        the product's local checks, run before every push (common rules, "Code")
 |-- src/
 |-- tests/
 \-- tools/                       deterministic tools for agents and people (common rules, "Working with agents")
