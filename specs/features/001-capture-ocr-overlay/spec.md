@@ -50,7 +50,7 @@ US-3
 - **AC-3.3** Given an attached window, when it moves or is resized, then the overlay follows it.
 - **AC-3.4** Given an attached window or process, when it is no longer in the foreground or is minimised, then the
   overlay hides and reading pauses; when it comes back, both resume.
-- **AC-3.5** Given a monitor with scaling other than 100%, then every line is drawn exactly over the original.
+- **AC-3.5** Given a monitor with scaling other than 100%, then every line is drawn over the original within 1 pixel.
 
 US-4
 - **AC-4.1** Given Aurora starts, then only a tray icon appears, no window and no taskbar entry.

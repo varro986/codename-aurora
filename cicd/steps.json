@@ -1,0 +1,33 @@
+{
+  "_": "The product's checks, deterministic, run on the machine before every push: pwsh -NoProfile -File cicd/run.ps1. dir: relative to the repository root; shell: pwsh; needs: commands or conditions that must hold, otherwise the step is skipped (with -Strict it fails). The remote CI runs the steps named in .github/workflows/ci.yml.",
+  "steps": [
+    {
+      "name": "build",
+      "dir": ".",
+      "shell": "pwsh",
+      "needs": ["dotnet"],
+      "run": "dotnet build Aurora.slnx"
+    },
+    {
+      "name": "unit",
+      "dir": ".",
+      "shell": "pwsh",
+      "needs": ["dotnet"],
+      "run": "dotnet test --project tests/Aurora.Core.Tests --no-build"
+    },
+    {
+      "name": "desktop",
+      "dir": ".",
+      "shell": "pwsh",
+      "needs": ["dotnet", "desktop"],
+      "run": "dotnet test --project tests/Aurora.Windows.Tests --no-build; if ($LASTEXITCODE) { exit $LASTEXITCODE }; dotnet test --project tests/Aurora.EndToEnd.Tests --no-build"
+    },
+    {
+      "name": "tools",
+      "dir": ".",
+      "shell": "pwsh",
+      "needs": ["pester5"],
+      "run": "$r = Invoke-Pester tools -PassThru; exit $r.FailedCount"
+    }
+  ]
+}

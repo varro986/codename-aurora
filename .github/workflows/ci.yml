@@ -1,0 +1,17 @@
+name: ci
+on: [pull_request]
+
+# read-only: the job only builds and tests
+permissions:
+  contents: read
+
+jobs:
+  # The cicd/ steps that need no desktop session, with the same runner as on the machine; the merge gate of main.
+  checks:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: pwsh -NoProfile -File cicd/run.ps1 -Step build,unit -Strict

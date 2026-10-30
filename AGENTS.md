@@ -218,13 +218,5 @@ None yet beyond the common rules. What the product is: `README.md`; what it must
 
 ## Verification
 
-Commands the orchestrator runs before a commit, from the repository root (`README.md`, "Tests", says what they cover):
-
-```
-dotnet build Aurora.slnx
-dotnet test --solution Aurora.slnx
-pwsh -NoProfile -c 'Invoke-Pester tools'
-```
-
-Warnings are errors. A test project with no tests yet ends with "Zero tests ran" (exit code 8) until its task adds
-them. The product name is a codename: it is changed only with `tools/rename-product.ps1`, never by hand.
+Before a commit the orchestrator runs `pwsh -NoProfile -File cicd/run.ps1`; the steps and what they cover are in
+`cicd/steps.json` and `README.md`, "Tests".
