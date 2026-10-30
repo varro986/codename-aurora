@@ -41,11 +41,12 @@ codename-aurora/
 |-- LICENSE           MIT
 |-- SECURITY.md       how to report a vulnerability
 |-- CODE_OF_CONDUCT.md
-|-- specs/            ideas.md, questions.md; requirements, architecture and the rest as they come
+|-- specs/            brainstorming.md; requirements, architecture and the rest as they come
 |   |-- features/     one folder per feature: spec.md, plan.md, tasks.md
 |   \-- decisions/    ADRs
 |-- src/              source code
 |-- tests/            tests, from the acceptance criteria
+|-- tools/            deterministic tools for agents and people
 |-- .githooks/        pre-commit: gitleaks on staged files
 |-- .github/          CI (gitleaks), issue and PR templates, Dependabot
 |-- .gitleaks.toml    secret scan rules
