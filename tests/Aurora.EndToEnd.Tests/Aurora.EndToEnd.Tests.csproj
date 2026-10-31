@@ -3,11 +3,15 @@
     <TargetFramework>$(WindowsTargetFramework)</TargetFramework>
     <SupportedOSPlatformVersion>$(WindowsMinimumVersion)</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
-    <!-- No tests yet: exit code 8 (zero tests ran) is not a failure until the first test lands; then remove this. -->
-    <TestingPlatformCommandLineArguments>--ignore-exit-code 8</TestingPlatformCommandLineArguments>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- One helper for both test projects that drive the sample targets. -->
+    <Compile Include="..\Aurora.Windows.Tests\Support\SampleTarget.cs" Link="Support\SampleTarget.cs" />
+    <Compile Include="..\Aurora.Windows.Tests\Support\Foreground.cs" Link="Support\Foreground.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Aurora.Core\Aurora.Core.csproj" />

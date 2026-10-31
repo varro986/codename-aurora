@@ -8,7 +8,9 @@ public sealed record AuroraSettings(
     KeyModifiers ProcessModifier,
     KeyModifiers MonitorModifier,
     TimeSpan ReadingInterval,
-    string? OcrLanguage);
+    string? OcrLanguage,
+    string LogFile,
+    long LogMaxBytes);
 
 /// <summary>The "Aurora" section of appsettings.json as written, before validation.</summary>
 public sealed class RawSettings
@@ -24,4 +26,8 @@ public sealed class RawSettings
     public string? ReadingIntervalMs { get; set; }
 
     public string? OcrLanguage { get; set; }
+
+    public string? LogFile { get; set; }
+
+    public string? LogMaxKilobytes { get; set; }
 }

@@ -20,8 +20,7 @@ tests/
 ```
 
 The other targets of IDEA-10 (a shell, a browser; a remote desktop session, by hand) come with the features that need
-them. Dependencies point inwards: `App -> Overlay, Windows -> Core`. Libraries: Avalonia, `Microsoft.Extensions.Configuration`
-and `Logging`, xUnit v3 on Microsoft.Testing.Platform (all MIT or Apache 2.0); versions in `Directory.Packages.props`.
+them. Dependencies point inwards: `App -> Overlay, Windows -> Core`. Libraries: Avalonia, `Microsoft.Extensions.Configuration` (JSON and environment variables), xUnit v3 on Microsoft.Testing.Platform (all MIT or Apache 2.0); versions in `Directory.Packages.props`.
 
 ## Flow
 
@@ -45,7 +44,8 @@ pixels.
 ## Configuration
 
 `Aurora.App/appsettings.json` holds every value: hotkey, the two pick modifiers, reading interval, OCR language (empty
-means the user's profile language). Read as `RawSettings`, validated by `AuroraSettingsParser` (`src/Aurora.Core/Settings/`)
+means the user's profile language), log file (environment variables allowed) and its size before it rolls over.
+An environment variable overrides a key for one machine or one test run (`Aurora__LogFile`, `Aurora__Hotkey`). Read as `RawSettings`, validated by `AuroraSettingsParser` (`src/Aurora.Core/Settings/`)
 at start: an invalid value stops the start with one message per key saying what is allowed.
 
 ## Risks
@@ -77,15 +77,15 @@ in T8.
 | Id | Task | Files | Depends on | Role | Done when | Status |
 |---|---|---|---|---|---|---|
 | T0 | Solution, projects and references, packages, contracts, settings, `cicd/`, CI job, rename tool | `Aurora.slnx`, `global.json`, `Directory.*.props`, `**/*.csproj`, `src/Aurora.Core/Contracts/`, `src/Aurora.Core/Settings/`, `src/Aurora.App/` (settings loading), `cicd/`, `.github/workflows/ci.yml`, `tools/` | - | orchestrator | builds with no warnings, `cicd/run.ps1` green | done |
-| T1 | `ReadingLoop`, `Attachment`, `FrameChange`, `LayoutMapper` with unit tests | `src/Aurora.Core/Reading/`, `tests/Aurora.Core.Tests/Reading/` | T0 | executor | AC-1.6, AC-2.1, AC-2.5, AC-3.4, AC-3.5 pass with fakes | to do |
-| T2 | Frame source on Windows Graphics Capture (window and monitor) | `src/Aurora.Windows/Capture/`, `tests/Aurora.Windows.Tests/Capture/` | T0, T7 | executor | supports AC-2.1 and AC-2.5: frames of the desktop target, null once it closes; monitor frames leave out a window excluded from capture | to do |
-| T3 | OCR on `Windows.Media.Ocr` | `src/Aurora.Windows/Ocr/`, `tests/Aurora.Windows.Tests/Ocr/` | T0 | executor | AC-2.2 on fixed images; supports AC-2.3: `OcrLanguageMissingException` for a language not installed | to do |
-| T4 | Target resolver, window list, window events (`SetWinEventHook`) | `src/Aurora.Windows/Targets/`, `tests/Aurora.Windows.Tests/Targets/` | T0, T7 | executor | AC-1.2, AC-1.3 against the targets; supports AC-1.4 (list), AC-3.3 and AC-3.4 (events) | to do |
-| T5 | Global hotkey (`RegisterHotKey`) | `src/Aurora.Windows/Hotkey/`, `tests/Aurora.Windows.Tests/Hotkey/` | T0 | executor | supports AC-1.1 and AC-1.7: registers, fires, returns false for a gesture already taken, releases on dispose | to do |
-| T6 | Overlay and pick layer, window styler, capture exclusion | `src/Aurora.Overlay/`, `src/Aurora.Windows/Overlay/`, `tests/Aurora.Windows.Tests/Overlay/` | T0 | executor | AC-1.5, AC-3.1, AC-3.2 | to do |
-| T7 | Sample targets: known text, changed on a command from the tests | `tests/targets/` | T0 | executor | each target shows its text and changes it on command; the desktop one also opens a second window | stub |
-| T8 | App: tray menu (Attach, Detach, Quit), logging, wiring | `src/Aurora.App/` | T1-T6 | orchestrator | AC-1.4, AC-1.7, AC-2.3, AC-4.1, AC-4.2, AC-4.3 | stub (settings loading) |
-| T9 | End-to-end tests | `tests/Aurora.EndToEnd.Tests/` | T8 | executor | AC-1.1, AC-2.4, AC-3.3 against both targets; AC-2.4 also by a check that no assembly references `System.Net` | to do |
+| T1 | `ReadingLoop`, `Attachment`, `FrameChange`, `LayoutMapper` with unit tests | `src/Aurora.Core/Reading/`, `tests/Aurora.Core.Tests/Reading/` | T0 | executor | AC-1.6, AC-2.1, AC-2.5, AC-3.4, AC-3.5 pass with fakes | done |
+| T2 | Frame source on Windows Graphics Capture (window and monitor) | `src/Aurora.Windows/Capture/`, `tests/Aurora.Windows.Tests/Capture/` | T0, T7 | executor | supports AC-2.1 and AC-2.5: frames of the desktop target, null once it closes; monitor frames leave out a window excluded from capture | done |
+| T3 | OCR on `Windows.Media.Ocr` | `src/Aurora.Windows/Ocr/`, `tests/Aurora.Windows.Tests/Ocr/` | T0 | executor | AC-2.2 on fixed images; supports AC-2.3: `OcrLanguageMissingException` for a language not installed | done |
+| T4 | Target resolver, window list, window events (`SetWinEventHook`) | `src/Aurora.Windows/Targets/`, `tests/Aurora.Windows.Tests/Targets/` | T0, T7 | executor | AC-1.2, AC-1.3 against the targets; supports AC-1.4 (list), AC-3.3 and AC-3.4 (events) | done |
+| T5 | Global hotkey (`RegisterHotKey`) | `src/Aurora.Windows/Hotkey/`, `tests/Aurora.Windows.Tests/Hotkey/` | T0 | executor | supports AC-1.1 and AC-1.7: registers, fires, returns false for a gesture already taken, releases on dispose | done |
+| T6 | Overlay and pick layer, window styler, capture exclusion | `src/Aurora.Overlay/`, `src/Aurora.Windows/Overlay/`, `tests/Aurora.Windows.Tests/Overlay/` | T0 | executor | supports AC-1.5, AC-3.1, AC-3.2, AC-3.5: styler bits, layered attributes and capture exclusion tested; windows checked on the desktop | done |
+| T7 | Sample targets: known text, changed on a command from the tests | `tests/targets/` | T0 | executor | each target shows its text and changes it on command; the desktop one also opens a second window | done |
+| T8 | App: tray menu (Attach, Detach, Quit), logging, wiring | `src/Aurora.App/` | T1-T6 | orchestrator | AC-1.4, AC-1.7, AC-2.3, AC-4.1, AC-4.2, AC-4.3 | done, tray checked by hand pending |
+| T9 | End-to-end tests | `tests/Aurora.EndToEnd.Tests/` | T8 | executor | AC-1.1, AC-1.5, AC-2.4, AC-3.1, AC-3.2, AC-3.3 against both targets; AC-2.4 also by a check that no assembly references `System.Net` | written, desktop run pending |
 
 Every criterion has one task that proves it ("AC-n"); the others only support it. Reviewer: after each task, a fresh
 agent checks the diff against the criteria it names. Remote desktop, the yellow border and AC-3.5 on a real scaled

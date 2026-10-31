@@ -5,7 +5,10 @@ public sealed record Frame(int Width, int Height, int Stride, ReadOnlyMemory<byt
 
 public interface IFrameSource : IAsyncDisposable
 {
-    /// <summary>The latest frame, or null when the source is gone (window closed, monitor removed).</summary>
+    /// <summary>
+    /// The latest frame at once, even if unchanged since the last call; it waits only for the very first frame.
+    /// Null when the source is gone (window closed, monitor removed).
+    /// </summary>
     Task<Frame?> NextAsync(CancellationToken cancellationToken);
 }
 

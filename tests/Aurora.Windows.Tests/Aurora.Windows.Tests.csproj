@@ -3,11 +3,13 @@
     <TargetFramework>$(WindowsTargetFramework)</TargetFramework>
     <SupportedOSPlatformVersion>$(WindowsMinimumVersion)</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
-    <!-- No tests yet: exit code 8 (zero tests ran) is not a failure until the first test lands; then remove this. -->
-    <TestingPlatformCommandLineArguments>--ignore-exit-code 8</TestingPlatformCommandLineArguments>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Ocr\Fixtures\*.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Aurora.Windows\Aurora.Windows.csproj" />

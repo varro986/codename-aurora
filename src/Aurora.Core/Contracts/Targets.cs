@@ -34,4 +34,10 @@ public interface ITargetResolver
 
     /// <summary>Open windows, their processes and the monitors.</summary>
     IReadOnlyList<TargetChoice> List();
+
+    /// <summary>
+    /// A name for the target as <see cref="List"/> shows it: the window title, "All windows of &lt;process&gt;" or
+    /// "Monitor N (WxH)"; a generic name when the target is already gone.
+    /// </summary>
+    string Describe(Target target);
 }

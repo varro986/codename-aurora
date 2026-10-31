@@ -41,10 +41,14 @@ public static partial class AuroraSettingsParser
 
         var interval = ParseInterval(raw.ReadingIntervalMs, errors);
         var language = string.IsNullOrWhiteSpace(raw.OcrLanguage) ? null : raw.OcrLanguage.Trim();
+        var logFile = ParseLogFile(raw.LogFile, errors);
+        var logMaxBytes = ParseLogMaxBytes(raw.LogMaxKilobytes, errors);
 
         return errors.Count > 0
             ? new SettingsResult(null, errors)
-            : new SettingsResult(new AuroraSettings(hotkey!, processModifier!.Value, monitorModifier!.Value, interval!.Value, language), errors);
+            : new SettingsResult(
+                new AuroraSettings(hotkey!, processModifier!.Value, monitorModifier!.Value, interval!.Value, language, logFile!, logMaxBytes!.Value),
+                errors);
     }
 
     private static HotkeyGesture? ParseHotkey(string? value, List<string> errors)
@@ -98,6 +102,30 @@ public static partial class AuroraSettingsParser
         }
 
         errors.Add($"{Section}:{nameof(RawSettings.ReadingIntervalMs)} '{value}': write a whole number of milliseconds above 0.");
+        return null;
+    }
+
+    private static string? ParseLogFile(string? value, List<string> errors)
+    {
+        var path = string.IsNullOrWhiteSpace(value) ? null : Environment.ExpandEnvironmentVariables(value.Trim());
+        if (path is not null && Path.IsPathFullyQualified(path))
+        {
+            return path;
+        }
+
+        errors.Add($"{Section}:{nameof(RawSettings.LogFile)} '{value}': write a full path; environment variables such as %LOCALAPPDATA% are allowed.");
+        return null;
+    }
+
+    private static long? ParseLogMaxBytes(string? value, List<string> errors)
+    {
+        const int BytesPerKilobyte = 1024;
+        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var kilobytes) && kilobytes > 0)
+        {
+            return (long)kilobytes * BytesPerKilobyte;
+        }
+
+        errors.Add($"{Section}:{nameof(RawSettings.LogMaxKilobytes)} '{value}': write a whole number of kilobytes above 0.");
         return null;
     }
 

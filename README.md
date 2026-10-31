@@ -28,7 +28,7 @@ interrupts the work. It lives in the system tray, with no main window.
 | Windows 11 | native OCR engine, screen capture, global hotkeys, overlay windows | platform |
 | .NET 10 | runtime, SDK, Microsoft.Testing.Platform | runtime |
 | Avalonia 12 | overlay, pick layer, tray icon | library |
-| Microsoft.Extensions (Configuration, Logging) | settings, logs | library |
+| Microsoft.Extensions.Configuration (JSON, environment variables) | settings; a variable overrides a key per machine | library |
 | xUnit v3, Pester 5 | tests of the code and of the tools | library |
 
 Nothing depends on Aurora.

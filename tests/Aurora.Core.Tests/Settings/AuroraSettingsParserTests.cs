@@ -12,6 +12,8 @@ public sealed class AuroraSettingsParserTests
         MonitorModifier = "Shift",
         ReadingIntervalMs = "500",
         OcrLanguage = "",
+        LogFile = @"C:\Logs\aurora.log",
+        LogMaxKilobytes = "1024",
     };
 
     [Fact]
@@ -103,7 +105,56 @@ public sealed class AuroraSettingsParserTests
     {
         var result = AuroraSettingsParser.Parse(new RawSettings());
 
-        Assert.Equal(4, result.Errors.Count);
+        Assert.Equal(6, result.Errors.Count);
+    }
+
+    [Fact]
+    public void Converts_the_log_size_to_bytes()
+    {
+        Assert.Equal(1024 * 1024, AuroraSettingsParser.Parse(Valid()).Settings!.LogMaxBytes);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("0")]
+    [InlineData("-5")]
+    [InlineData("1.5")]
+    [InlineData("big")]
+    public void Rejects_an_invalid_log_size(string? value)
+    {
+        var raw = Valid();
+        raw.LogMaxKilobytes = value;
+
+        var result = AuroraSettingsParser.Parse(raw);
+
+        Assert.Null(result.Settings);
+        Assert.Single(result.Errors, e => e.StartsWith("Aurora:LogMaxKilobytes", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("aurora.log")]
+    public void Rejects_a_log_file_that_is_not_a_full_path(string? value)
+    {
+        var raw = Valid();
+        raw.LogFile = value;
+
+        var result = AuroraSettingsParser.Parse(raw);
+
+        Assert.Contains(result.Errors, e => e.StartsWith("Aurora:LogFile", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Expands_environment_variables_in_the_log_file()
+    {
+        var raw = Valid();
+        raw.LogFile = @"%LOCALAPPDATA%\Aurora\aurora.log";
+
+        var path = AuroraSettingsParser.Parse(raw).Settings!.LogFile;
+
+        Assert.Equal(Path.Combine(Environment.GetEnvironmentVariable("LOCALAPPDATA")!, "Aurora", "aurora.log"), path);
     }
 
     [Fact]

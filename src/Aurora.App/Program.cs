@@ -1,17 +1,24 @@
+using Avalonia;
+using Avalonia.Controls;
+
 namespace Aurora.App;
 
 internal static class Program
 {
-    // Tray, overlay and wiring arrive with T8; until then the app validates its configuration and exits.
     [STAThread]
-    public static int Main()
+    public static int Main(string[] args)
     {
         var result = SettingsLoader.Load(AppContext.BaseDirectory);
-        foreach (var error in result.Errors)
+        if (!result.IsValid)
         {
-            Console.Error.WriteLine(error);
+            // No tray yet and no console in a WinExe: a message box is the only place the user sees it.
+            var message = $"Aurora cannot start. Fix appsettings.json:{Environment.NewLine}{string.Join(Environment.NewLine, result.Errors)}";
+            NativeMethods.ShowError(message);
+            return 1;
         }
 
-        return result.IsValid ? 0 : 1;
+        return AppBuilder.Configure(() => new AuroraApp(result.Settings!))
+            .UsePlatformDetect()
+            .StartWithClassicDesktopLifetime(args, ShutdownMode.OnExplicitShutdown);
     }
 }

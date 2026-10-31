@@ -5,6 +5,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Aurora.Windows.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Aurora.Core\Aurora.Core.csproj" />
   </ItemGroup>
 </Project>

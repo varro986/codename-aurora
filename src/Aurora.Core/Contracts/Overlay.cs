@@ -2,7 +2,7 @@ namespace Aurora.Core.Contracts;
 
 public interface IOverlay
 {
-    /// <summary>Draws each line over the original; target bounds and line bounds in screen pixels.</summary>
+    /// <summary>Draws each line over the original; target bounds and line bounds in screen pixels. Callable from any thread.</summary>
     void Show(PixelRect targetBounds, IReadOnlyList<OcrLine> lines);
 
     void Hide();
